@@ -1,0 +1,395 @@
+/* Doctor Pending Tasks Styles */
+.doctor-pending-tasks {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Header Section */
+.doctor-tasks-header {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-header-content h1 {
+  color: #0A4B66;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.doctor-task-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.doctor-stat-item {
+  text-align: center;
+}
+
+.doctor-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.doctor-stat-item.doctor-urgent .doctor-stat-value {
+  color: #ff0000;
+}
+
+.doctor-stat-item.doctor-high .doctor-stat-value {
+  color: #ff6b6b;
+}
+
+.doctor-stat-item.doctor-total .doctor-stat-value {
+  color: #2C5F9F;
+}
+
+.doctor-stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Controls */
+.doctor-tasks-controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-filter-section,
+.doctor-sort-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doctor-filter-section label,
+.doctor-sort-section label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #666;
+  font-weight: 500;
+}
+
+.doctor-filter-select,
+.doctor-sort-select {
+  padding: 8px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.doctor-filter-select:focus,
+.doctor-sort-select:focus {
+  outline: none;
+  border-color: #2C5F9F;
+}
+
+/* Tasks Grid */
+.doctor-tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Task Card */
+.doctor-task-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.doctor-task-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-task-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.doctor-task-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #0B264C 0%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.doctor-task-info {
+  flex: 1;
+}
+
+.doctor-task-info h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.doctor-patient-name {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Priority Badge */
+.doctor-priority-badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.doctor-priority-badge.doctor-urgent {
+  background: #ffe0e0;
+  color: #ff0000;
+}
+
+.doctor-priority-badge.doctor-high {
+  background: #ffe6e6;
+  color: #ff6b6b;
+}
+
+.doctor-priority-badge.doctor-medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.doctor-priority-badge.doctor-low {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Task Body */
+.doctor-task-body {
+  margin-bottom: 15px;
+}
+
+.doctor-task-description {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.doctor-task-meta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.doctor-time-elapsed {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Task Actions */
+.doctor-task-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.doctor-action-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.doctor-action-btn:hover {
+  transform: scale(1.05);
+}
+
+.doctor-action-btn.doctor-approve { background: #28a745; color: white; }
+.doctor-action-btn.doctor-decline { background: #dc3545; color: white; }
+.doctor-action-btn.doctor-review { background: #17a2b8; color: white; }
+.doctor-action-btn.doctor-renew { background: #007bff; color: white; }
+.doctor-action-btn.doctor-view { background: #6c757d; color: white; }
+.doctor-action-btn.doctor-urgent-action {
+  background: linear-gradient(135deg, #ff0000 0%, #ff6b6b 100%);
+  color: white;
+}
+
+/* Empty State */
+.doctor-empty-tasks {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-empty-icon {
+  font-size: 4rem;
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+.doctor-empty-tasks h3 { color: #333; margin-bottom: 10px; }
+.doctor-empty-tasks p { color: #666; }
+
+/* Modal */
+.doctor-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s;
+}
+
+.doctor-modal-content {
+  background: white;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s;
+}
+
+.doctor-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #0B264C 0%);
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+.doctor-modal-header h2 { margin: 0; }
+
+.doctor-modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.doctor-modal-body { padding: 30px; }
+
+.doctor-task-detail-section { margin-bottom: 20px; }
+
+.doctor-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.doctor-detail-row.doctor-full-width {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.doctor-detail-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 120px;
+}
+
+.doctor-detail-value { color: #333; }
+
+.doctor-detail-description {
+  color: #333;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.doctor-modal-actions {
+  display: flex;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.doctor-btn-primary,
+.doctor-btn-secondary {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.doctor-btn-primary { background: linear-gradient(135deg, #0B264C 0%); color: white; }
+.doctor-btn-secondary { background: #6c757d; color: white; }
+
+.doctor-btn-primary:hover,
+.doctor-btn-secondary:hover { transform: scale(1.05); }
+
+/* Loading */
+.doctor-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+}
+
+.doctor-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-tasks-grid { grid-template-columns: 1fr; }
+  .doctor-tasks-controls { flex-direction: column; }
+  .doctor-task-stats { justify-content: space-around; }
+  .doctor-task-actions { flex-wrap: wrap; }
+  .doctor-modal-content { width: 95%; max-height: 90vh; }
+  .doctor-modal-actions { flex-direction: column; }
+}

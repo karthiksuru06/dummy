@@ -1,0 +1,278 @@
+.doctor-profile {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.doctor-profile-header {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-profile-header h1 {
+  color: #0A4B66;
+  margin: 0;
+}
+
+/* Summary Card */
+.doctor-profile-summary-card {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.doctor-profile-image-section {
+  text-align: center;
+}
+
+.doctor-profile-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid #2C5F9F;
+  margin-bottom: 15px;
+}
+
+.doctor-change-photo-btn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #0B264C 0%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.doctor-change-photo-btn:hover {
+  transform: scale(1.05);
+}
+
+.doctor-profile-info-section h2 {
+  color: #0A4B66;
+  margin-bottom: 5px;
+}
+
+.doctor-specialty {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.doctor-profile-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.doctor-stat {
+  text-align: center;
+}
+
+.doctor-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2C5F9F;
+}
+
+.doctor-stat-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Details Card */
+.doctor-profile-details-card {
+  padding: 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.doctor-profile-details-card h3 {
+  color: #0A4B66;
+  margin-bottom: 20px;
+}
+
+.doctor-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.doctor-detail-item {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.doctor-detail-icon {
+  color: #2C5F9F;
+  font-size: 1.5rem;
+}
+
+.doctor-detail-item label {
+  display: block;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.doctor-detail-item p {
+  color: #0A4B66;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Availability Card */
+.doctor-availability-card {
+  padding: 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.doctor-availability-card h3 {
+  color: #0A4B66;
+  margin-bottom: 20px;
+}
+
+.doctor-availability-table {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.doctor-table-header,
+.doctor-table-row {
+  display: grid;
+  grid-template-columns: 120px repeat(10, 60px);
+  align-items: center;
+  padding: 10px 0;
+}
+
+.doctor-table-header {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #666;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.doctor-table-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.doctor-day-column {
+  font-weight: 500;
+  padding-left: 10px;
+}
+
+.doctor-time-column {
+  text-align: center;
+}
+
+.doctor-availability-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.doctor-availability-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.doctor-btn-save,
+.doctor-btn-cancel {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.doctor-btn-save {
+  background: linear-gradient(135deg, #0B264C 0%);
+  color: white;
+}
+
+.doctor-btn-cancel {
+  background: #6c757d;
+  color: white;
+}
+
+.doctor-btn-save:hover,
+.doctor-btn-cancel:hover {
+  transform: scale(1.05);
+}
+
+/* Account Settings */
+.doctor-account-settings-card {
+  padding: 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-account-settings-card h3 {
+  color: #0A4B66;
+  margin-bottom: 20px;
+}
+
+.doctor-settings-btn {
+  display: block;
+  width: 200px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  color: #0A4B66;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.doctor-settings-btn:hover {
+  background: #e9ecef;
+  border-color: #2C5F9F;
+}
+
+.doctor-settings-btn.doctor-logout {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.doctor-settings-btn.doctor-logout:hover {
+  background: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-profile-summary-card {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .doctor-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-availability-table {
+    font-size: 0.85rem;
+  }
+
+  .doctor-table-header,
+  .doctor-table-row {
+    grid-template-columns: 80px repeat(10, 40px);
+  }
+}

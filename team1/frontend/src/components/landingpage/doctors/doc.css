@@ -1,0 +1,447 @@
+/* Modern Carousel Design for Doctors Section */
+
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --text-dark: #0f172a;
+  --text-light: #64748b;
+  --bg-light: #f8fafc;
+}
+
+.doctor-section {
+  background: #ffffff;
+  padding: 140px 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 2;
+}
+
+.section-header h2 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.04em;
+  color: #0f172a;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Carousel Container */
+.carousel-container {
+  position: relative;
+  width: 90%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 0;
+  z-index: 2;
+}
+
+.doctor-carousel {
+  overflow: visible;
+  padding: 40px 0;
+  perspective: 1000px;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 40px;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: center;
+  align-items: center;
+  min-height: 480px; /* Increased to account for taller cards */
+}
+
+/* Doctor Cards */
+.doctor-carousel-card {
+  flex: 0 0 380px; /* Slightly wider cards */
+  width: 380px;
+  min-width: 380px;
+  max-width: 380px;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+  transform: scale(0.9);
+  filter: grayscale(60%);
+  position: relative;
+  z-index: 1;
+}
+
+.doctor-carousel-card.active {
+  opacity: 1;
+  transform: scale(1.05);
+  filter: grayscale(0%);
+  z-index: 10;
+}
+
+.doctor-card-inner {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.doctor-carousel-card.active .doctor-card-inner {
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.15), 0 0 40px rgba(37, 99, 235, 0.05);
+}
+
+.doctor-header-bg {
+  height: 120px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  width: 100%;
+  position: relative;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.doctor-carousel-card.active .doctor-header-bg {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  border-bottom: none;
+}
+
+.doctor-avatar-container {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin: -55px auto 20px;
+  border-radius: 50%;
+  padding: 4px;
+  background: #ffffff;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.doctor-carousel-card.active .doctor-avatar-container {
+  transform: scale(1.1);
+  box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.2);
+  border: 2px solid white;
+}
+
+.doctor-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #10b981;
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  animation: pulse-dot 2.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.doctor-info-basic {
+  text-align: center;
+  padding: 0 32px; /* Increased padding */
+}
+
+.doctor-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.doctor-specialty {
+  color: #2563eb;
+  font-size: 0.95rem; /* slightly larger */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+
+.doctor-degree {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.doctor-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 24px 32px; /* increased vertical and horizontal padding */
+  margin-top: 24px;
+  background: #ffffff;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.05); /* very soft bounds */
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b; /* darkened slightly */
+  margin-bottom: 8px; /* space between label and value */
+}
+
+.stat-value {
+  font-size: 1.25rem; /* larger values */
+  font-weight: 700;
+  color: #0f172a;
+  color: #2563eb; /* values highlighted */
+}
+
+.doctor-carousel-card.active .stat-box {
+  background: #eff6ff; /* soft blue inside active card */
+  border-color: rgba(37, 99, 235, 0.1);
+}
+
+.doctor-rating-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star-icon {
+  width: 18px;
+  height: 18px;
+  color: #e2e8f0;
+}
+
+.star-icon.filled {
+  color: #f59e0b; /* vivid gold */
+}
+
+.rating-score {
+  font-weight: 800; /* heavier */
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.rating-count {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.consult-btn {
+  margin: 0 32px 32px;
+  padding: 16px;
+  border-radius: 12px; /* Professional slightly rounded instead of pill */
+  background: #f8fafc;
+  color: #94a3b8;
+  font-weight: 700;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  cursor: default;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1rem;
+}
+
+.doctor-carousel-card.active .consult-btn {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+  cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+}
+
+.doctor-carousel-card.active .consult-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.4);
+  background: #2563eb; /* switch to primary brand color on hover */
+  border-color: #2563eb;
+}
+
+/* Carousel Navigation Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 64px;
+  height: 64px;
+  background: white;
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.carousel-btn:hover {
+  background: #0f172a;
+  border-color: #0f172a;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+}
+
+.carousel-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: #0f172a;
+  transition: stroke 0.3s ease;
+}
+
+.carousel-btn:hover svg {
+  stroke: white;
+}
+
+.carousel-btn.prev {
+  left: 0;
+}
+
+.carousel-btn.next {
+  right: 0;
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.indicator:hover {
+  background: #94a3b8;
+  transform: scale(1.2);
+}
+
+.indicator.active {
+  background: #2563eb;
+  width: 32px;
+  border-radius: 9999px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .doctor-carousel-card {
+    flex: 0 0 300px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+  }
+
+  .carousel-track {
+    gap: 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .doctor-section {
+    padding: 100px 16px;
+  }
+
+  .section-header h2 {
+    font-size: 2.5rem;
+  }
+
+  .carousel-container {
+    padding: 20px 60px;
+  }
+
+  .doctor-carousel-card {
+    flex: 0 0 280px;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+  }
+
+  .carousel-track {
+    gap: 20px;
+    min-height: 280px;
+  }
+
+  .carousel-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .carousel-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .section-header h2 {
+    font-size: 2rem;
+  }
+
+  .carousel-container {
+    padding: 20px 40px;
+  }
+
+  .doctor-header-bg {
+    height: 80px;
+  }
+
+  .doctor-avatar-container {
+    width: 88px;
+    height: 88px;
+    margin: -44px auto 16px;
+  }
+
+  .doctor-name {
+    font-size: 1.15rem;
+  }
+}

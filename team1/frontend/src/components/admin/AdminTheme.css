@@ -1,0 +1,296 @@
+/* MEDviz Admin - Premium Console Theme (Aligned with Patient/Doctor) */
+:root {
+  /* 🎨 Primary Palette - Deep Professional Blues & Emerald Accents */
+  --admin-primary: #2C5F9F;          /* Medium Blue */
+  --admin-primary-dark: #1E4270;      /* Darker Blue */
+  --admin-primary-light: #E0E9F8;     /* Very Light Blue */
+  
+  --admin-secondary: #0A4B66;        /* Deep Slate/Teal */
+  --admin-accent: #10b981;          /* Emerald Green (Success) */
+  --admin-warning: #f59e0b;         /* Amber */
+  --admin-danger: #ef4444;          /* Rose Red */
+  
+  /* ☁️ Surface & Backgrounds (Peaceful & High Density) */
+  --admin-bg-canvas: #f8fafc;       /* Ultra Light Slate */
+  --admin-bg-card: rgba(255, 255, 255, 0.85);
+  --admin-bg-sidebar: #ffffff;
+  --admin-bg-header: #0B264C;       /* Consistent with common gradients */
+  
+  /* ✍️ Typography */
+  --admin-text-main: #1e293b;       /* Slate 800 */
+  --admin-text-muted: #64748b;      /* Slate 500 */
+  --admin-text-white: #ffffff;
+  
+  /* 🛡️ Borders & Glassmorphism */
+  --admin-border: rgba(226, 232, 240, 0.8);
+  --admin-glass-bg: rgba(255, 255, 255, 0.7);
+  --admin-glass-border: rgba(255, 255, 255, 0.4);
+  --admin-blur: blur(12px);
+  
+  /* ✨ Shadows */
+  --admin-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --admin-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --admin-shadow-lg: 0 10px 25px -5px rgba(11, 38, 76, 0.1);
+  --admin-shadow-xl: 0 20px 35px -8px rgba(11, 38, 76, 0.15);
+  
+  /* 📐 Layout Constants */
+  --admin-sidebar-width: 260px;
+  --admin-header-height: 70px;
+  --admin-radius-lg: 20px;
+  --admin-radius-md: 14px;
+  --admin-radius-sm: 10px;
+}
+
+/* 🏔️ Global Reset for Admin Portal */
+.admin-layout.premium-theme {
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  background-color: var(--admin-bg-canvas);
+  color: var(--admin-text-main);
+}
+
+/* ✨ Header Refinement - Professional Dark Blue */
+.admin-layout.premium-theme .admin-header {
+  background: var(--admin-bg-header) !important;
+  backdrop-filter: var(--admin-blur);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--admin-shadow-md) !important;
+  color: white !important;
+}
+
+.admin-layout.premium-theme .admin-logo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to right, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+.admin-layout.premium-theme .admin-name {
+  color: white !important;
+  font-weight: 600;
+}
+
+/* 📂 Sidebar Refinement - Minimalist & Focused */
+.admin-layout.premium-theme .admin-sidebar {
+  background: var(--admin-bg-sidebar) !important;
+  border-right: 1px solid var(--admin-border);
+  box-shadow: none !important;
+  padding: 1.5rem 0.75rem;
+}
+
+.admin-layout.premium-theme .admin-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-layout.premium-theme .admin-nav-link {
+  border-radius: var(--admin-radius-sm);
+  padding: 14px 18px !important;
+  font-weight: 500;
+  color: var(--admin-text-muted) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.admin-layout.premium-theme .admin-nav-link:hover {
+  background: var(--admin-primary-light) !important;
+  color: var(--admin-primary) !important;
+  transform: translateX(5px);
+  border-color: rgba(44, 95, 159, 0.1);
+}
+
+.admin-layout.premium-theme .admin-nav-link.active {
+  background: var(--admin-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(44, 95, 159, 0.25) !important;
+  font-weight: 600;
+}
+
+.admin-layout.premium-theme .admin-nav-link.active .admin-nav-icon svg {
+  color: white !important;
+  fill: none !important; /* Keep icons clean */
+  stroke: white !important;
+}
+
+.admin-layout.premium-theme .admin-logout-btn {
+  margin-top: auto;
+  margin-bottom: 1rem;
+  background: #f1f5f9 !important;
+  color: var(--admin-danger) !important;
+  border-radius: var(--admin-radius-sm);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.admin-layout.premium-theme .admin-logout-btn:hover {
+  background: #fef2f2 !important;
+  border-color: rgba(239, 68, 68, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 🏠 Home Details */
+.admin-home.premium-theme {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.premium-theme .admin-page-header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  color: var(--admin-secondary) !important;
+  letter-spacing: -0.01em;
+}
+
+.premium-theme .admin-page-subtitle {
+  color: var(--admin-text-muted);
+  font-weight: 500;
+}
+
+/* 💠 Premium Glass Cards - Prestige Bento Grid Style */
+.premium-theme .admin-metric-card, 
+.premium-theme .admin-recent-activity,
+.premium-theme .admin-chart-section,
+.premium-theme .admin-table-container,
+.premium-theme .admin-search-section,
+.premium-theme .admin-controls-section,
+.premium-theme .admin-specialization-section {
+  background: var(--admin-bg-card) !important;
+  backdrop-filter: var(--admin-blur) !important;
+  -webkit-backdrop-filter: var(--admin-blur) !important;
+  border: 1px solid var(--admin-glass-border) !important;
+  border-radius: var(--admin-radius-lg) !important;
+  box-shadow: var(--admin-shadow-lg) !important;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+.premium-theme .admin-metric-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: var(--admin-shadow-xl) !important;
+  border-color: var(--admin-primary) !important;
+}
+
+.premium-theme .admin-metric-icon {
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark)) !important;
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: var(--admin-radius-md) !important;
+  box-shadow: 0 8px 20px rgba(44, 95, 159, 0.2) !important;
+}
+
+.premium-theme .admin-metric-icon svg {
+  color: white !important;
+  fill: none !important;
+  stroke: white !important;
+}
+
+.premium-theme .admin-metric-value {
+  color: var(--admin-secondary) !important;
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+}
+
+.premium-theme .admin-metric-detail {
+  font-weight: 500;
+  color: var(--admin-text-muted);
+}
+
+/* 🏃 Activity Items */
+.premium-theme .admin-activity-item {
+  background: rgba(248, 250, 252, 0.6) !important;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-md) !important;
+  margin-bottom: 12px;
+  padding: 16px !important;
+  transition: all 0.3s ease;
+}
+
+.premium-theme .admin-activity-item:hover {
+  background: white !important;
+  border-color: var(--admin-primary-light) !important;
+  transform: translateX(10px) !important;
+  box-shadow: var(--admin-shadow-sm) !important;
+}
+
+.premium-theme .admin-activity-title {
+  color: var(--admin-secondary) !important;
+  font-weight: 600 !important;
+}
+
+/* 📋 Table & Management Screens */
+.premium-theme .admin-table-container {
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.premium-theme th {
+  background: #f8fafc !important;
+  color: var(--admin-secondary) !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 16px !important;
+}
+
+.premium-theme td {
+  padding: 16px !important;
+  border-bottom: 1px solid var(--admin-border);
+  color: var(--admin-text-main);
+}
+
+.premium-theme tr:last-child td {
+  border-bottom: none;
+}
+
+.premium-theme .admin-view-btn,
+.premium-theme .admin-approve,
+.premium-theme .admin-action-btn-new {
+  background: var(--admin-primary) !important;
+  color: white !important;
+  border-radius: var(--admin-radius-sm) !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+}
+
+.premium-theme .admin-view-btn:hover,
+.premium-theme .admin-approve:hover {
+  background: var(--admin-primary-dark) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.3) !important;
+}
+
+.premium-theme .admin-view-all-link {
+  background: var(--admin-primary-light) !important;
+  color: var(--admin-primary) !important;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.premium-theme .admin-view-all-link:hover {
+  background: var(--admin-primary) !important;
+  color: white !important;
+}
+
+/* 🔍 Search box */
+.premium-theme .admin-search-box {
+  background: white !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: var(--admin-radius-md) !important;
+  padding: 10px 20px !important;
+}
+
+.premium-theme .admin-search-box input {
+  font-weight: 500;
+}

@@ -1,0 +1,187 @@
+/*
+  DOCTOR DASHBOARD - COLOR ONLY OVERRIDE
+  Only changes colors to: #2C5F9F, #E0E9F8, #0A4B66
+  Does NOT change layouts, sizes, or structure
+*/
+
+/* Replace ALL generic colors with your blue theme */
+
+/* Replace purple/pink/generic gradients with blue */
+*[style*="linear-gradient"] {
+  background: linear-gradient(135deg, #0B264C 0%) !important;
+}
+
+/* Replace all gray/generic headers with dark blue */
+/* (Note: Headers in dark backgrounds are overridden below with white) */
+h1, h2, h3, h4, h5, h6 {
+  color: #0A4B66;
+}
+
+/* Replace generic primary colors with medium blue */
+.btn-primary,
+button[class*="primary"],
+button[class*="approve"],
+button[class*="save"],
+.primary {
+  background-color: #2C5F9F !important;
+  border-color: #2C5F9F !important;
+  color: white !important;
+}
+
+/* Ensure white text and icons on dark backgrounds */
+.btn-primary svg,
+button[class*="primary"] svg,
+button[class*="approve"] svg,
+button[class*="save"] svg,
+.primary svg,
+[style*="background: #2C5F9F"] svg,
+[style*="background: #0A4B66"] svg,
+[style*="background: #1E4270"] svg,
+[style*="background:#2C5F9F"] svg,
+[style*="background:#0A4B66"] svg,
+[style*="background:#1E4270"] svg {
+  color: white !important;
+}
+
+/* Replace generic secondary colors with light blue */
+.btn-secondary,
+button[class*="secondary"],
+.secondary {
+  background-color: #E0E9F8 !important;
+  border-color: #2C5F9F !important;
+  color: #0A4B66 !important;
+}
+
+/* Replace generic borders with light blue */
+.card, .box, div[class*="card"] {
+  border-color: #E0E9F8 !important;
+}
+
+/* Replace hover backgrounds with light blue */
+*:hover {
+  border-color: #2C5F9F;
+}
+
+/* Replace generic icons with medium blue (only on light backgrounds) */
+svg:not(.btn-primary svg):not(button svg):not([class*="navbar"] svg):not([class*="header"] svg),
+.metric-icon svg,
+.metric-icon svg *,
+.icon:not(.btn-primary .icon):not(button .icon),
+[class*="icon"]:not(.btn-primary [class*="icon"]):not(button [class*="icon"]) {
+  color: #2C5F9F !important;
+}
+
+/* Replace focus colors with medium blue */
+*:focus {
+  border-color: #2C5F9F !important;
+  box-shadow: 0 0 0 3px rgba(44, 95, 159, 0.1) !important;
+}
+
+/* Replace generic backgrounds with light blue */
+div[class*="background"],
+div[class*="bg"] {
+  background-color: #E0E9F8;
+}
+
+/* Replace loading spinner colors */
+.loading-spinner, [class*="spinner"] {
+  border-color: #E0E9F8 !important;
+  border-top-color: #2C5F9F !important;
+}
+
+/* Replace link colors */
+a {
+  color: #2C5F9F !important;
+}
+
+a:hover {
+  color: #1E4270 !important;
+}
+
+/* Replace badge/status colors (keep functional ones like success/danger) */
+.badge:not(.badge-success):not(.badge-danger):not(.badge-warning),
+.status:not([class*="success"]):not([class*="danger"]):not([class*="warning"]) {
+  background-color: #E0E9F8 !important;
+  color: #0A4B66 !important;
+}
+
+/* CRITICAL: Ensure white text and icons on ALL dark backgrounds */
+/* Dark navbar/header elements */
+[class*="navbar"],
+[class*="header"][class*="home"],
+.doctor-navbar,
+.home-header,
+.modal-header {
+  color: white !important;
+}
+
+/* ALL navbar elements - text and icons must be white */
+.doctor-navbar *,
+.doctor-navbar h1,
+.doctor-navbar h2,
+.doctor-navbar h3,
+.doctor-navbar span,
+.doctor-navbar p,
+.doctor-navbar button,
+.doctor-navbar svg,
+.doctor-navbar .icon,
+.doctor-navbar [class*="icon"],
+.navbar-container *,
+.navbar-left *,
+.navbar-right *,
+.brand h2,
+.menu-toggle,
+.notification-btn,
+.notification-btn svg,
+.logout-btn,
+.logout-btn svg,
+.profile-info,
+.doctor-navbar .doctor-name,
+.doctor-navbar .doctor-specialty,
+[class*="navbar"] svg,
+[class*="navbar"] .icon,
+[class*="navbar"] [class*="icon"],
+[class*="header"][class*="home"] svg,
+.home-header svg,
+.home-header h1,
+.home-header h2,
+.home-header p,
+.modal-header h1,
+.modal-header h2,
+.modal-header h3 {
+  color: white !important;
+}
+
+/* Dark background buttons and containers */
+[class*="-btn"][style*="background"][style*="#2C5F9F"],
+[class*="-btn"][style*="background"][style*="#0A4B66"],
+[class*="-btn"][style*="background"][style*="#1E4270"],
+.view-more-btn,
+.approve-btn,
+.save-btn,
+[class*="action-btn"][class*="view"],
+[class*="metric-icon"],
+[class*="task-icon"],
+[class*="patient-icon"],
+[class*="notification-icon"][style*="background"] {
+  color: white !important;
+}
+
+/* Icons inside dark backgrounds */
+.view-more-btn svg,
+.approve-btn svg,
+.save-btn svg,
+[class*="metric-icon"] svg,
+[class*="task-icon"] svg,
+[class*="patient-icon"] svg {
+  color: white !important;
+}
+
+/* Active sidebar link - dark background needs white text and icons */
+.sidebar-link.active,
+.sidebar-link.active *,
+.sidebar-link.active svg,
+.sidebar-link.active .nav-icon,
+.sidebar-link.active .nav-label {
+  color: white !important;
+}

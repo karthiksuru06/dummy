@@ -1,0 +1,813 @@
+/* Doctor Profile Modal - MEDviz Theme (scoped to avoid CSS conflicts) */
+
+.doctor-profile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 38, 76, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: dpm-fadeIn 0.3s ease;
+}
+
+@keyframes dpm-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.doctor-profile-modal {
+  background: #FFFFFF;
+  border-radius: 20px;
+  max-width: 700px;
+  width: 95%;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px); /* mobile-safe viewport height */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: dpm-slideUp 0.4s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+@keyframes dpm-slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Sticky header bar with close button */
+.doctor-modal-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #0B264C 0%, #1a4a8a 100%);
+  flex-shrink: 0;
+  border-radius: 20px 20px 0 0;
+}
+
+.doctor-modal-step-label {
+  color: #FFFFFF;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Scrollable body — THIS is where scroll happens */
+.doctor-modal-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.doctor-modal-scroll-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.doctor-modal-scroll-body::-webkit-scrollbar-track {
+  background: #F5F7FA;
+}
+
+.doctor-modal-scroll-body::-webkit-scrollbar-thumb {
+  background: #2C5F9F;
+  border-radius: 4px;
+}
+
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Step 1: Profile View */
+.profile-view {
+  padding: 40px 32px;
+}
+
+.profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #E0E9F8;
+}
+
+.doctor-avatar-modal {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2C5F9F 0%, #0B264C 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-initials-modal {
+  color: #FFFFFF;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.profile-header h2 {
+  color: #0B264C;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.specialization-modal {
+  color: #2C5F9F;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.qualification-modal {
+  color: #666666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-box {
+  background: linear-gradient(135deg, #E0E9F8 0%, #F5F7FA 100%);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  color: #2C5F9F;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  display: block;
+  color: #666666;
+  font-size: 0.85rem;
+}
+
+.profile-section {
+  margin-bottom: 28px;
+}
+
+.profile-section h3 {
+  color: #0B264C;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.profile-section p {
+  color: #666666;
+  line-height: 1.6;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #F5F7FA;
+}
+
+.detail-label {
+  color: #666666;
+  font-weight: 600;
+}
+
+.badge-online {
+  background: #d4edda;
+  color: #155724;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-offline {
+  background: #fff3cd;
+  color: #856404;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rating-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stars-large {
+  display: flex;
+  gap: 4px;
+}
+
+.stars-large .star {
+  font-size: 1.5rem;
+}
+
+.rating-text-large {
+  color: #666666;
+  font-size: 1rem;
+}
+
+/* Step 2: Slots View */
+.slots-view {
+  padding: 32px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #2C5F9F;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #0B264C;
+  transform: translateX(-4px);
+}
+
+.slots-view h2 {
+  color: #0B264C;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #666666;
+  font-size: 1rem;
+  margin-bottom: 32px;
+}
+
+.consultation-type {
+  margin-bottom: 32px;
+}
+
+.consultation-type label {
+  display: block;
+  color: #0B264C;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.type-options {
+  display: flex;
+  gap: 12px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: 2px solid #E0E9F8;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #666666;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.type-btn:hover {
+  border-color: #2C5F9F;
+  color: #2C5F9F;
+}
+
+.type-btn.active {
+  background: linear-gradient(135deg, #2C5F9F 0%, #0B264C 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+}
+
+.date-selection, .slots-selection {
+  margin-bottom: 32px;
+}
+
+.date-selection h3, .slots-selection h3 {
+  color: #0B264C;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.dates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.date-btn {
+  padding: 14px 16px;
+  border: 2px solid #E0E9F8;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #666666;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.date-btn:hover {
+  border-color: #2C5F9F;
+  color: #2C5F9F;
+  transform: translateY(-2px);
+}
+
+.date-btn.selected {
+  background: linear-gradient(135deg, #2C5F9F 0%, #0B264C 100%);
+  color: #FFFFFF;
+  border-color: transparent;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.slot-btn {
+  padding: 16px;
+  border: 2px solid #E0E9F8;
+  border-radius: 12px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.slot-btn:hover {
+  border-color: #2C5F9F;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.15);
+}
+
+.slot-time {
+  display: block;
+  color: #0B264C;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.slot-status {
+  display: block;
+  color: #28a745;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.no-slots-message {
+  text-align: center;
+  color: #666666;
+  font-size: 1rem;
+  padding: 24px;
+  background: #F5F7FA;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+/* Step 3: Booking Form */
+.booking-form-view {
+  padding: 32px;
+}
+
+.summary-box {
+  background: linear-gradient(135deg, #E0E9F8 0%, #F5F7FA 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+.summary-box h3 {
+  color: #0B264C;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #666666;
+  font-weight: 600;
+}
+
+.fee-highlight {
+  color: #2C5F9F;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.form-section {
+  margin-bottom: 32px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #0B264C;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #E0E9F8;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2C5F9F;
+  box-shadow: 0 0 0 3px rgba(44, 95, 159, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Step 4: Confirmation */
+.confirmation-view {
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 3rem;
+  color: #FFFFFF;
+  animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.confirmation-view h2 {
+  color: #0B264C;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.success-message {
+  color: #666666;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+
+.confirmation-box {
+  background: #F5F7FA;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.confirmation-box h3 {
+  color: #0B264C;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.confirmation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #E0E9F8;
+}
+
+.confirmation-item:last-child {
+  border-bottom: none;
+}
+
+.conf-label {
+  color: #666666;
+  font-weight: 600;
+}
+
+.conf-value {
+  color: #0B264C;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #ffc107;
+  font-weight: 700;
+  background: #fff3cd;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.info-box {
+  background: #E0E9F8;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border-left: 4px solid #2C5F9F;
+}
+
+.info-box p {
+  color: #0B264C;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn-primary-large {
+  background: linear-gradient(135deg, #2C5F9F 0%, #0B264C 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.2);
+}
+
+.btn-primary-large:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(44, 95, 159, 0.3);
+}
+
+.btn-primary-large:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #F5F7FA;
+  color: #666666;
+  border: 2px solid #E0E9F8;
+  padding: 14px 32px;
+  border-radius: 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #E0E9F8;
+  color: #2C5F9F;
+  border-color: #2C5F9F;
+}
+
+.btn-outline {
+  background: #FFFFFF;
+  color: #2C5F9F;
+  border: 2px solid #2C5F9F;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #2C5F9F;
+  color: #FFFFFF;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-profile-modal {
+    width: 95%;
+    max-height: 95vh;
+    max-height: 95dvh;
+    border-radius: 16px;
+  }
+
+  .doctor-modal-header-bar {
+    border-radius: 16px 16px 0 0;
+    padding: 12px 16px;
+  }
+
+  .profile-view,
+  .slots-view,
+  .booking-form-view,
+  .confirmation-view {
+    padding: 24px 20px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dates-grid,
+  .slots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions,
+  .confirmation-actions {
+    flex-direction: column;
+  }
+
+  .type-options {
+    flex-direction: column;
+  }
+
+  .confirmation-view h2 {
+    font-size: 1.6rem;
+  }
+}
+
+/* Validation Styles */
+.validation-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 6px;
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-input {
+  border-color: #dc2626 !important;
+}
+
+.error-input:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+.character-count {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Confirmation Notice */
+.confirmation-notice {
+  background: #E0F2FE;
+  border: 2px solid #2C5F9F;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 24px 0;
+  text-align: left;
+}
+
+.confirmation-notice strong {
+  color: #0B264C;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.confirmation-notice p {
+  color: #334155;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Clinic Reminder Box */
+.clinic-reminder-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #E0E9F8 0%, #F5F7FA 100%);
+  border-left: 4px solid #2C5F9F;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.reminder-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.reminder-text {
+  flex: 1;
+}
+
+.reminder-text strong {
+  display: block;
+  color: #0B264C;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.reminder-text p {
+  color: #2C5F9F;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+}

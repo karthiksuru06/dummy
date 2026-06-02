@@ -1,0 +1,71 @@
+/* Doctor Dashboard - Premium Medical Command Theme */
+:root {
+  /* 🎨 Primary Palette - Deep Professional Blues & Emerald Accents */
+  --dr-primary: #6366f1;          /* Modern Indigo */
+  --dr-primary-dark: #4f46e5;
+  --dr-primary-light: #818cf8;
+  
+  --dr-secondary: #0f172a;       /* Deep Slate */
+  --dr-accent: #10b981;         /* Emerald Green (Success/Health) */
+  --dr-warning: #f59e0b;        /* Amber */
+  --dr-danger: #ef4444;         /* Rose Red */
+  
+  /* 🌑 Surface & Backgrounds */
+  --dr-bg-canvas: #f8fafc;      /* Ultra Light Slate */
+  --dr-bg-card: #ffffff;
+  --dr-bg-sidebar: #ffffff;
+  --dr-bg-header: rgba(255, 255, 255, 0.8);
+  
+  /* ✍️ Typography */
+  --dr-text-main: #1e293b;      /* Slate 800 */
+  --dr-text-muted: #64748b;     /* Slate 500 */
+  --dr-text-white: #ffffff;
+  
+  /* 🛡️ Borders & Glassmorphism */
+  --dr-border: #e2e8f0;         /* Slate 200 */
+  --dr-glass-bg: rgba(255, 255, 255, 0.7);
+  --dr-glass-border: rgba(255, 255, 255, 0.3);
+  
+  /* ✨ Shadows */
+  --dr-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --dr-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --dr-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --dr-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* 📐 Layout Constants */
+  --dr-sidebar-width: 280px;
+  --dr-header-height: 80px;
+  --dr-radius-lg: 24px;
+  --dr-radius-md: 16px;
+  --dr-radius-sm: 12px;
+}
+
+/* Base resets for Doctor Portal */
+.doctor-portal-root {
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  background-color: var(--dr-bg-canvas);
+  color: var(--dr-text-main);
+  min-height: 100vh;
+}
+
+.doctor-portal-container {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Glass Card Definition */
+.dr-glass-card {
+  background: var(--dr-bg-card);
+  border: 1px solid var(--dr-border);
+  border-radius: var(--dr-radius-lg);
+  box-shadow: var(--dr-shadow-md);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.dr-glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--dr-shadow-xl);
+  border-color: var(--dr-primary-light);
+}

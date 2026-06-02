@@ -1,0 +1,343 @@
+/* =========================
+   Admin Layout - Deep Blue Theme (#05294b)
+========================= */
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f8f9fa;
+}
+
+/* Top Header */
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: linear-gradient(135deg, #05294b 0%, #011b32 100%);
+  box-shadow: 0 2px 10px rgba(5, 41, 75, 0.2);
+  z-index: 900;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+}
+/* FIXED LOGO COLOR */
+h1.admin-logo {
+  color: #ffffff !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.admin-header-center {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 30px;
+}
+
+.admin-search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 25px;
+  padding: 10px 20px;
+  gap: 10px;
+}
+
+.admin-search-bar svg {
+  color: white;
+  font-size: 1.1rem;
+}
+
+.admin-search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.admin-search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+.admin-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 260px;
+  height: calc(100vh - 70px);
+  background: #ffffff;
+  box-shadow: none;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.admin-sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.admin-sidebar-nav li {
+  margin-bottom: 5px;
+}
+
+/* ================= NAV LINKS CLEAN FIX ================= */
+
+/* Remove ANY default underline from anchor tags */
+a,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none !important;
+}
+
+/* Default/Inactive Navigation Link */
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  color: #333333 !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease;
+  position: relative;
+  background: transparent;
+  border-left: none;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove focus outline completely */
+.admin-nav-link:focus,
+.admin-nav-link:active,
+.admin-nav-link:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+/* Default Icon - Blue */
+.admin-sidebar .admin-nav-link .admin-nav-icon,
+.admin-sidebar .admin-nav-link .admin-nav-icon svg {
+  color: #05294b;
+  fill: #05294b;
+  stroke: #05294b;
+  transition: 0.3s ease;
+}
+
+/* Active Icon - White */
+.admin-sidebar .admin-nav-link.active .admin-nav-icon,
+.admin-sidebar .admin-nav-link.active .admin-nav-icon svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
+}
+/* Hover State */
+.admin-nav-link:hover {
+  background: linear-gradient(90deg, #f8fbfd 0%, #93c3ee 100%) !important;
+  color: #05294b !important;
+  text-decoration: none !important;
+}
+
+/* Active State */
+.admin-nav-link.active {
+  background: linear-gradient(90deg,#05294b 0%,#073a68 100%) !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+}
+
+/* Active Icon/Text */
+.admin-nav-link.active .admin-nav-icon,
+.admin-nav-link.active .admin-nav-label,
+.admin-nav-link.active .admin-nav-icon svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* =========================
+   Buttons
+========================= */
+
+/* Dark Button */
+.admin-my-button {
+  padding: 10px 20px;
+  background: #05294b;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-my-button:hover {
+  background: #073a68;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 41, 75, 0.3);
+}
+
+/* Light Button */
+.admin-my-button-light {
+  padding: 10px 20px;
+  background: #e6f2ff;
+  color: #05294b;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-my-button-light:hover {
+  background: #cce6ff;
+  color: #05294b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 41, 75, 0.2);
+}
+
+/* Next Button - Blue Text */
+.admin-next-btn {
+  padding: 10px 20px;
+  background: #e6f2ff; /* light background */
+  color: #007bff;      /* blue text */
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-next-btn:hover {
+  background: #cce6ff;  /* slightly lighter */
+  color: #0056b3;       /* darker blue on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 41, 75, 0.2);
+}
+
+/* Logout Button */
+.admin-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: #05294b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-logout-btn:hover {
+  background: #073a68;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 41, 75, 0.3);
+}
+
+/* Main Content */
+.admin-main {
+  margin-top: 70px;
+  margin-left: 260px;
+  padding: 30px;
+  min-height: calc(100vh - 70px);
+  background: #f8f9fa;
+}
+
+/* Sidebar Overlay */
+.admin-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-menu-toggle {
+    display: block;
+  }
+
+  .admin-header-center {
+    display: none;
+  }
+
+  .admin-sidebar { 
+   background: #ffffff;
+   box-shadow: none;
+}
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-overlay {
+    display: block;
+  }
+
+  .admin-main {
+    margin-left: 0;
+  }
+}

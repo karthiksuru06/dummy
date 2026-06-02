@@ -1,0 +1,142 @@
+.footer {
+  width: 100%;
+  background: #0f172a; /* Reverted to original navy blue */
+  padding: 100px 0 60px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  border-top: none;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 60px;
+  width: 90%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+.footer-brand-col h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.footer-brand-col p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 320px;
+  margin-bottom: 32px;
+}
+
+.footer-grid h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 32px;
+}
+
+.footer-grid ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-grid li {
+  margin-bottom: 20px;
+}
+
+.footer-grid a {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.footer-grid a:hover {
+  color: #ffffff;
+}
+
+.footer-contact-col p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-contact-col strong {
+  color: #ffffff;
+}
+
+.social-icons {
+  display: flex;
+  gap: 16px;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.social-icon:hover {
+  background: #ffffff;
+  color: #0f172a;
+  transform: translateY(-2px);
+  border-color: #ffffff;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 0;
+  width: 90%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .footer-brand-col p {
+    margin: 0 auto 40px;
+  }
+  .social-icons {
+    justify-content: center;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}

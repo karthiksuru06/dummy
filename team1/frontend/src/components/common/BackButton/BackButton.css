@@ -1,0 +1,100 @@
+/* BackButton Component - MEDviz Theme */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 20px;
+  background: white;
+  border: none;
+  border-radius: 12px;
+  color: #2C5F9F;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-button:hover {
+  background: #E0E9F8;
+  border-color: #2C5F9F;
+  transform: translateX(-3px);
+}
+
+.back-button:active {
+  transform: translateX(-1px);
+}
+
+.back-button-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover .back-button-icon {
+  transform: translateX(-2px);
+}
+
+.back-button-text {
+  line-height: 1;
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  .back-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .back-button-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Compact variant for pages with headers */
+@media (max-width: 480px) {
+  .back-button {
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  .back-button-text {
+    display: none; /* Hide text on very small screens, show only icon */
+  }
+
+  .back-button-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Position variant for fixed header pages */
+.back-button-fixed {
+  position: fixed;
+  top: 50px;
+  right: 50px;
+  z-index: 100;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-button-fixed:hover {
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.2);
+}
+
+/* Focus state for accessibility */
+.back-button:focus {
+  outline: 2px solid #2C5F9F;
+  outline-offset: 2px;
+}
+
+.back-button:focus:not(:focus-visible) {
+  outline: none;
+}

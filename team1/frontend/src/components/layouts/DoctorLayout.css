@@ -1,0 +1,46 @@
+/* 🏞️ Professional Layout - Standard Top-Down Structure */
+.doctor-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.doctor-content {
+  flex: 1;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.dr-nav-icon-btn.dr-bell-active {
+  background: #6366f1;
+  color: white;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.dr-nav-icon-btn.dr-bell-active:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+}
+
+/* No desktop offset needed for top navbar */
+@media (min-width: 1024px) {
+  .doctor-content {
+    margin-left: 0; 
+  }
+}
+
+/* Mobile Adjustments (Navbar is sticky, no padding-top needed unless it overlaps) */
+@media (max-width: 1024px) {
+  .doctor-content {
+    margin-left: 0 !important;
+  }
+}

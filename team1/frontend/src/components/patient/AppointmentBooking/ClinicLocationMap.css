@@ -1,0 +1,202 @@
+/* Clinic Location Map Styles - MEDviz Theme */
+
+.clinic-location-map {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.clinic-info-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #E0E9F8;
+}
+
+.location-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #E0E9F8 0%, #F5F7FA 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clinic-info-text h3 {
+  color: #0B264C;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.clinic-info-text p {
+  color: #666666;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #F5F7FA;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.map-container iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.map-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.map-fallback-icon {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.map-fallback p {
+  color: #666666;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.btn-view-map {
+  background: linear-gradient(135deg, #2C5F9F 0%, #0B264C 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-view-map:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.3);
+}
+
+.map-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-directions,
+.btn-open-maps {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid #2C5F9F;
+  background: #FFFFFF;
+  color: #2C5F9F;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-directions:hover,
+.btn-open-maps:hover {
+  background: #2C5F9F;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.2);
+}
+
+.clinic-visit-note {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, #E0E9F8 0%, #F5F7FA 100%);
+  border-left: 4px solid #2C5F9F;
+  border-radius: 8px;
+}
+
+.note-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.note-text {
+  color: #0B264C;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.note-text strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #2C5F9F;
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .clinic-location-map {
+    padding: 16px;
+  }
+
+  .map-container {
+    height: 250px;
+  }
+
+  .map-actions {
+    flex-direction: column;
+  }
+
+  .btn-directions,
+  .btn-open-maps {
+    width: 100%;
+  }
+
+  .clinic-info-text h3 {
+    font-size: 1.1rem;
+  }
+
+  .clinic-info-text p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-container {
+    height: 200px;
+  }
+
+  .clinic-info-header {
+    gap: 8px;
+  }
+
+  .location-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .note-icon {
+    font-size: 1.2rem;
+  }
+}

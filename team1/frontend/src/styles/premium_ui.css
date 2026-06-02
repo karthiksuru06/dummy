@@ -1,0 +1,72 @@
+/* 
+  MEDviz Premium Refactor - Common Design Tokens
+  Standardized for Chatbot, Find Doctors, Notifications, and Profile
+*/
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+  --premium-shadow: 0 8px 32px rgba(11, 38, 76, 0.08);
+  --premium-blur: blur(12px);
+  --premium-gradient: linear-gradient(135deg, #0B264C 0%, #1e3a8a 100%);
+  --accent-teal: #00A8CC;
+}
+
+/* 🏔️ Global Refinements for Patient Flow */
+.patient-chatbot-page, .find-doctor-page, .notifications-page, .profile-container {
+  background: radial-gradient(circle at top right, #f0f4f8 0%, #ffffff 100%) !important;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ✨ Glassmorphism Base for Cards */
+.chatbot-container, .doctor-card-main, .notification-card, .profile-header-card, .overview-card, .stat-card, .action-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--premium-blur) !important;
+  -webkit-backdrop-filter: var(--premium-blur) !important;
+  border: var(--glass-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--premium-shadow) !important;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+
+/* 🚀 Hover Physics */
+.doctor-card-main:hover, .notification-card:hover, .stat-card:hover, .action-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 40px rgba(11, 38, 76, 0.12) !important;
+  border-color: rgba(30, 58, 138, 0.2) !important;
+}
+
+/* 💠 Professional UI Components */
+.chatbot-header, .page-header-section h1, .notifications-header h1 {
+  background: var(--premium-gradient) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Special Case for Chatbot Header (Keep Solid Background) */
+.chatbot-header {
+  background: var(--premium-gradient) !important;
+  color: white !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+}
+
+/* 🔘 Premium Buttons */
+.chatbot-send-btn, .consult-btn, .mark-all-read-btn, .edit-btn {
+  background: var(--premium-gradient) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2) !important;
+  border: none !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+.chatbot-send-btn:hover, .consult-btn:hover, .mark-all-read-btn:hover, .edit-btn:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3) !important;
+}

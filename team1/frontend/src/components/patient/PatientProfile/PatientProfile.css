@@ -1,0 +1,296 @@
+/* MEDviz Patient Profile styles */
+:root {
+  --bg-color: #F8FAFC;
+  --primary-color: #1E3A8A;
+  --accent-color: #14B8A6;
+  --text-dark: #1F2937;
+  --text-muted: #6B7280;
+  --card-radius: 16px;
+  --spacing: 8px;
+  --shadow-soft: 0 4px 12px rgba(0,0,0,0.08);
+  --transition: 0.3s ease;
+  --font-family: 'Inter', sans-serif;
+}
+
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(4 * var(--spacing)) calc(3 * var(--spacing));
+  background: var(--bg-color);
+  font-family: var(--font-family);
+  min-height: 100vh;
+}
+
+.profile-header-card {
+  background: #ffffff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: calc(4 * var(--spacing));
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--spacing));
+  position: relative;
+  overflow: hidden;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.profile-header-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(30,58,138,0.05), rgba(20,184,166,0.05));
+  pointer-events: none;
+}
+
+.avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(30, 58, 138, 0.2);
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.avatar .edit-avatar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--accent-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--transition);
+}
+
+.avatar .edit-avatar:hover {
+  transform: scale(1.1);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 calc(1 * var(--spacing));
+}
+
+.profile-info p {
+  margin: calc(0.5 * var(--spacing)) 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.profile-info .emergency {
+  display: flex;
+  align-items: center;
+  color: var(--accent-color);
+  font-weight: 500;
+  margin-top: calc(1 * var(--spacing));
+}
+
+.profile-info .emergency svg {
+  margin-right: calc(0.5 * var(--spacing));
+}
+
+.edit-btn {
+  padding: calc(0.75 * var(--spacing)) calc(2 * var(--spacing));
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: calc(2 * var(--spacing));
+  cursor: pointer;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.edit-btn:hover {
+  background: #162f6c;
+  transform: translateY(-2px);
+}
+
+.overview-card {
+  background: #ffffff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: calc(3 * var(--spacing));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: calc(2 * var(--spacing));
+  max-width: 1000px;
+  margin: calc(4 * var(--spacing)) auto;
+}
+
+.overview-item {
+  display: flex;
+  align-items: center;
+  gap: calc(1 * var(--spacing));
+}
+
+.overview-item svg {
+  flex-shrink: 0;
+  color: var(--primary-color);
+}
+
+.overview-item .label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.overview-item .value {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.badge {
+  background: var(--accent-color);
+  color: #fff;
+  padding: calc(0.25 * var(--spacing)) calc(1 * var(--spacing));
+  border-radius: calc(2 * var(--spacing));
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.medications {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(0.5 * var(--spacing));
+}
+
+.med-tag {
+  background: #e0f7f4;
+  color: var(--text-dark);
+  padding: calc(0.25 * var(--spacing)) calc(0.75 * var(--spacing));
+  border-radius: calc(2 * var(--spacing));
+  font-size: 0.8rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: calc(2 * var(--spacing));
+  max-width: 1000px;
+  margin: calc(4 * var(--spacing)) auto;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: calc(2 * var(--spacing));
+  text-align: center;
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: default;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.stat-card svg {
+  color: var(--primary-color);
+  margin-bottom: calc(1 * var(--spacing));
+}
+
+.stat-card .stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.stat-card .stat-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: calc(2 * var(--spacing));
+  max-width: 1000px;
+  margin: calc(4 * var(--spacing)) auto;
+}
+
+.action-card {
+  background: #ffffff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: calc(2 * var(--spacing));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+}
+
+.action-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.action-card .info {
+  display: flex;
+  align-items: center;
+  gap: calc(1 * var(--spacing));
+}
+
+.action-card .info svg {
+  color: var(--accent-color);
+}
+
+.action-card .text {
+  display: flex;
+  flex-direction: column;
+}
+
+.action-card .title {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.action-card .desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.action-card .chevron {
+  color: var(--text-muted);
+}
+
+/* responsive adjustments */
+@media (max-width: 768px) {
+  .profile-header-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-header-card .profile-info {
+    align-items: center;
+  }
+}
+

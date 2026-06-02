@@ -1,0 +1,435 @@
+/* 
+  Patient Dashboard - Modern Bento Refactor
+  Design System: Minimalist White & Blue
+  Author: MAANG-Level Engineer (25 Years Experience)
+*/
+
+:root {
+  --dashboard-bg: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --card-shadow: 0 8px 32px rgba(15, 23, 42, 0.04);
+  --card-border: 1px solid rgba(15, 23, 42, 0.05);
+  --glass-blur: blur(16px);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-blue: #3b82f6;
+  --accent-light: #eff6ff;
+  --easing: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --shadow-premium: 0 20px 40px rgba(15, 23, 42, 0.12);
+}
+
+.dashboard-bg {
+  min-height: 100vh;
+  background: var(--dashboard-bg);
+  padding: 40px 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text-primary);
+}
+
+.dashboard-container {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 🏔️ Greeting Header */
+.dashboard-greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 48px;
+  padding: 0 10px;
+}
+
+.greeting-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+
+.profile-avatar-large {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border: 4px solid var(--accent-light);
+  box-shadow: var(--card-shadow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  overflow: hidden;
+  transition: all 0.3s var(--easing);
+}
+
+.profile-avatar-large:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 🍱 Modern Bento Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas: 
+    "appointments stats"
+    "doctors calendar"
+    "doctors chat";
+  gap: 24px;
+}
+
+/* 📦 Base Card Styling */
+.dashboard-card {
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: 24px;
+  padding: 32px;
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: all 0.6s;
+}
+
+.dashboard-card:hover::before {
+  left: 100%;
+}
+
+.dashboard-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 📅 Appointments Area */
+.appointments-card-new {
+  grid-area: appointments;
+}
+
+.appointments-list-new {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.appointment-list-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  border: var(--card-border);
+  transition: all 0.3s ease;
+}
+
+.appointment-list-item:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-blue);
+}
+
+.appointment-avatar-circle {
+  width: 48px;
+  height: 48px;
+  background: var(--accent-blue);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 20px;
+}
+
+.appointment-list-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.appointment-list-meta {
+  display: flex;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 📊 Health Stats Area */
+.health-stats-grid {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.stat-card-new {
+  background: white;
+  padding: 24px;
+  border-radius: 24px;
+  border: var(--card-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-new::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card-new:hover::after {
+  opacity: 1;
+}
+
+.stat-card-new:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  border-color: var(--accent-blue);
+}
+
+.stat-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.stat-card-new:nth-child(1) .stat-icon-wrap { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stat-card-new:nth-child(2) .stat-icon-wrap { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.stat-card-new:nth-child(3) .stat-icon-wrap { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-new:nth-child(4) .stat-icon-wrap { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+.stat-card-new:hover .stat-icon-wrap {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stat-label-new {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.stat-value-new {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-unit-new {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* 👩‍⚕️ Doctors Area */
+.doctors-card-bottom {
+  grid-area: doctors;
+}
+
+.doctors-grid-horizontal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.doctor-card-small {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  border: var(--card-border);
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.doctor-card-small:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
+  border-color: var(--accent-blue);
+}
+
+.doctor-avatar-small {
+  width: 44px;
+  height: 44px;
+  background: var(--accent-light);
+  color: var(--accent-blue);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.doctor-small-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.doctor-small-email {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.doctor-view-profile-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--text-primary);
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.doctor-view-profile-btn:hover {
+  background: var(--accent-blue);
+}
+
+/* 🤖 Chat Widget Area */
+.chat-widget-card {
+  grid-area: chat;
+  background: linear-gradient(135deg, var(--text-primary) 0%, #0f172a 100%);
+  color: white;
+  border-radius: 24px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s var(--easing);
+}
+
+.chat-widget-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 25px 50px rgba(15, 23, 42, 0.3);
+}
+
+.chat-widget-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.chat-widget-card:hover::after {
+  opacity: 1;
+}
+
+.chat-widget-message {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.chat-widget-btn {
+  background: white;
+  color: var(--text-primary);
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.4s var(--easing);
+  width: 100%;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-widget-btn:hover {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* 📅 Calendar Area */
+.calendar-card-wrapper {
+  grid-area: calendar;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "appointments"
+      "stats"
+      "calendar"
+      "doctors"
+      "chat";
+  }
+  
+  .dashboard-greeting {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}

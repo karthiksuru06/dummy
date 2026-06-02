@@ -1,0 +1,103 @@
+.find-doctors-container {
+  padding: 20px;
+}
+
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.find-doctor-card {
+  background: transparent;
+}
+
+/* minor overrides to ensure card inner matches page spacing */
+.find-doctor-card .doctor-card-inner {
+  padding: 80px 18px 18px;
+}
+
+/* adjust modal & details remain unchanged */
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.doctor-details p {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.doctor-details strong {
+  color: #333;
+}
+
+@media (max-width: 1200px) {
+  .doctors-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-content {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .doctor-card {
+    padding: 10px;
+  }
+
+  .modal-content {
+    padding: 15px;
+    max-width: 95%;
+  }
+}

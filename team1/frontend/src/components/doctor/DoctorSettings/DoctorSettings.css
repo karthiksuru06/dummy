@@ -1,0 +1,117 @@
+.doctor-settings {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.doctor-settings-header {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-settings-header h1 {
+  color: #0A4B66;
+  margin: 0;
+}
+
+.doctor-settings-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-settings-section h3 {
+  color: #0A4B66;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doctor-settings-section h3 svg {
+  color: #2C5F9F;
+}
+
+.doctor-setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.doctor-setting-item:last-child {
+  border-bottom: none;
+}
+
+.doctor-setting-info label {
+  display: block;
+  color: #0A4B66;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.doctor-setting-info p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.doctor-toggle-switch {
+  width: 50px;
+  height: 25px;
+  cursor: pointer;
+}
+
+.doctor-setting-select {
+  padding: 8px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.doctor-setting-select:focus {
+  outline: none;
+  border-color: #2C5F9F;
+}
+
+.doctor-save-settings-btn {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #0B264C 0%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px auto;
+  transition: transform 0.3s;
+}
+
+.doctor-save-settings-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .doctor-setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .doctor-toggle-switch,
+  .doctor-setting-select {
+    align-self: flex-start;
+  }
+}
