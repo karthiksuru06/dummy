@@ -342,8 +342,9 @@ router.get('/reports', async (req, res) => {
     // Get report from registration
     if (patient.medical_reports) {
       const filePath = path.resolve(__dirname, '..', patient.medical_reports);
-      // Prevent path traversal
-      if (!filePath.startsWith(path.resolve(__dirname, '..'))) {
+      // Prevent path traversal — constrain to the uploads dir, not all of backend/.
+      const uploadsRoot = path.resolve(__dirname, '..', 'uploads');
+      if (!filePath.startsWith(uploadsRoot + path.sep)) {
         return res.status(400).json({ message: 'Invalid file path' });
       }
 
@@ -417,7 +418,7 @@ router.get('/reports/download/:reportId', async (req, res) => {
     let fileName;
 
     // Check if it's a registration report (starts with 'reg_')
-    const uploadsBase = path.resolve(__dirname, '..');
+    const uploadsBase = path.resolve(__dirname, '..', 'uploads');
     if (reportId.startsWith('reg_')) {
       const patient = await Patient.findById(decoded.id);
       if (!patient || !patient.medical_reports) {
@@ -436,7 +437,7 @@ router.get('/reports/download/:reportId', async (req, res) => {
     }
 
     // Prevent path traversal
-    if (!filePath.startsWith(uploadsBase)) {
+    if (!filePath.startsWith(uploadsBase + path.sep)) {
       return res.status(400).json({ message: 'Invalid file path' });
     }
 
@@ -493,7 +494,7 @@ router.get('/reports/view/:reportId', async (req, res) => {
     }
 
     // Prevent path traversal
-    if (!filePath.startsWith(uploadsBase)) {
+    if (!filePath.startsWith(uploadsBase + path.sep)) {
       return res.status(400).json({ message: 'Invalid file path' });
     }
 

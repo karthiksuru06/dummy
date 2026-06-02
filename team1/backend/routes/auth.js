@@ -11,15 +11,29 @@ const { generateOTP, hashOTP, verifyOTP, sendOTPEmail, isOTPExpired } = require(
 const router = express.Router();
 
 // Configure multer for file uploads
+const crypto = require('crypto');
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    // Random, collision-free name (was Date.now(), which collides under
+    // concurrency and produces guessable URLs).
+    cb(null, `${crypto.randomUUID()}${path.extname(file.originalname)}`);
   }
 });
-const upload = multer({ storage });
+
+// Restrict type + size on the public registration upload (was unrestricted).
+const ALLOWED = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024, files: 5 },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED.includes(file.mimetype)) return cb(null, true);
+    cb(new Error('Unsupported file type'));
+  },
+});
 
 // Patient Registration
 router.post('/patients/register', upload.single('medical_reports'), async (req, res) => {
@@ -286,9 +300,17 @@ router.post('/admin/login', async (req, res) => {
   }
 });
 
-// Admin Registration (Optional - for creating initial admin)
+// Admin Registration — gated. Previously this was open to the public, allowing
+// anyone to self-grant admin and read all PHI. Now it requires a one-time
+// bootstrap secret (set ADMIN_REGISTRATION_SECRET in env for initial seeding,
+// then unset it). Prefer the seed script over leaving this enabled.
 router.post('/admin/register', async (req, res) => {
   try {
+    const bootstrapSecret = process.env.ADMIN_REGISTRATION_SECRET;
+    if (!bootstrapSecret || req.headers['x-admin-bootstrap'] !== bootstrapSecret) {
+      return res.status(403).json({ message: 'Admin registration is disabled' });
+    }
+
     const { email, password, full_name } = req.body;
 
     // Validate required fields

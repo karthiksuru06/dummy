@@ -66,6 +66,18 @@ const appointmentSchema = new mongoose.Schema({
   }
 });
 
+// ---- Indexes (every route queries by these; without them Mongo full-scans) ----
+appointmentSchema.index({ doctor_id: 1, status: 1, appointment_date: 1 });
+appointmentSchema.index({ patient_id: 1, status: 1, appointment_date: 1 });
+appointmentSchema.index({ status: 1, appointment_date: 1 }); // cron jobs
+
+// Prevent double-booking at the DB layer (closes the read-then-write race).
+// A given doctor cannot hold two active appointments in the same slot.
+appointmentSchema.index(
+  { doctor_id: 1, appointment_date: 1, appointment_time: 1 },
+  { unique: true, partialFilterExpression: { status: { $in: ['pending', 'scheduled', 'rescheduled'] } } }
+);
+
 // Update the updated_at timestamp before saving
 appointmentSchema.pre('save', function(next) {
   this.updated_at = Date.now();

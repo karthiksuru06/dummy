@@ -34,9 +34,9 @@ const getTransporter = () => {
   }
 };
 
-// Generate a 6-digit OTP
+// Generate a 6-digit OTP using a CSPRNG (Math.random is predictable).
 const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 };
 
 // Hash OTP for storage

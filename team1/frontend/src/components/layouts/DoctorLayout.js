@@ -5,7 +5,7 @@ import './DoctorLayout.css';
 
 const DoctorLayout = () => {
   return (
-    <div className="doctor-layout">
+    <div className="doctor-layout doctor-portal">
       <DoctorNavbar />
       <div className="doctor-content">
         <Outlet />

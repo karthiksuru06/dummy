@@ -293,7 +293,7 @@ router.get('/profile', async (req, res) => {
     let decoded;
     try {
       console.log('Verifying token...');
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log('Token verified successfully. Patient ID:', decoded.id);
     } catch (jwtError) {
       console.log('JWT Error caught:', jwtError.name, jwtError.message);
@@ -436,7 +436,7 @@ router.put('/profile', async (req, res) => {
     // Verify token and get patient ID
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return res.status(401).json({
@@ -637,7 +637,7 @@ router.put('/changePassword', async (req, res) => {
     // Verify token and get patient ID
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return res.status(401).json({

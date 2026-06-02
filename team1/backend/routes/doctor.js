@@ -1,8 +1,16 @@
 const express = require('express');
 const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
+const { authenticate, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
+
+// A doctor may only modify their own record (admins may modify any).
+function ensureSelfOrAdmin(req, res, next) {
+  if (req.user.role === 'admin' || req.user.id === String(req.params.id)) return next();
+  return res.status(403).json({ message: 'Forbidden: not your account' });
+}
+const doctorSelf = [authenticate, requireRole('doctor', 'admin'), ensureSelfOrAdmin];
 
 // Get available doctors
 router.get('/available', async (req, res) => {
@@ -230,7 +238,7 @@ router.get('/:id/profile', async (req, res) => {
 });
 
 // Update doctor profile
-router.put('/:id/profile', async (req, res) => {
+router.put('/:id/profile', doctorSelf, async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -284,7 +292,7 @@ router.put('/:id/profile', async (req, res) => {
 });
 
 // Update availability schedule
-router.put('/:id/availability', async (req, res) => {
+router.put('/:id/availability', doctorSelf, async (req, res) => {
   try {
     const { id } = req.params;
     const { availability_schedule } = req.body;
@@ -318,7 +326,7 @@ router.put('/:id/availability', async (req, res) => {
 });
 
 // Upload profile picture
-router.post('/:id/profile-picture', async (req, res) => {
+router.post('/:id/profile-picture', doctorSelf, async (req, res) => {
   try {
     const { id } = req.params;
     const { profile_picture } = req.body; // File path after upload

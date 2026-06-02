@@ -15,22 +15,20 @@ const router = express.Router();
 /* ------------------------------------------------------------------ */
 router.post("/", async (req, res) => {
   try {
-    const { userId, message } = req.body;
+    // Identity comes from the JWT, never the client body (was impersonable).
+    const userId = req.user.id;
+    const { message } = req.body;
 
-    if (!userId || typeof userId !== "string" || !userId.trim()) {
-      return res.status(400).json({ error: "Missing or invalid userId" });
-    }
     if (!message || typeof message !== "string" || !message.trim()) {
       return res.status(400).json({ error: "Missing or invalid message" });
     }
 
     const cleanMessage = sanitizeInput(message);
 
-    console.log(`[Chat] userId=${userId}  cleanMsg="${cleanMessage.slice(0, 80)}"`);
+    // Do not log clinical message content (PHI).
+    console.log(`[Chat] userId=${userId} requestId=${req.id} len=${cleanMessage.length}`);
 
-    const reply = await handleMessage(userId.trim(), cleanMessage);
-
-    console.log(`[Chat] reply type=${reply.type}  severity=${reply.severity}`);
+    const reply = await handleMessage(userId, cleanMessage);
 
     return res.json({ reply });
   } catch (err) {
@@ -55,14 +53,10 @@ router.post("/", async (req, res) => {
 /* ------------------------------------------------------------------ */
 router.post("/reset", async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id;
 
-    if (!userId || typeof userId !== "string" || !userId.trim()) {
-      return res.status(400).json({ error: "Missing or invalid userId" });
-    }
-
-    await markChatCompleted(userId.trim());
-    resetConversation(userId.trim());
+    await markChatCompleted(userId);
+    resetConversation(userId);
 
     console.log(`[Chat] Reset conversation for userId=${userId}`);
 

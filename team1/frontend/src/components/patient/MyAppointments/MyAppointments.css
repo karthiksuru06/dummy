@@ -1,8 +1,8 @@
 .my-appointments-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #E0E9F8 0%, #f7f9fc 100%);
-  padding-top: 30px;
-  padding-bottom: 32px;
+  padding-top: calc(var(--app-header-h) + var(--space-5));
+  padding-bottom: var(--space-6);
 }
 
 .my-appointments-container {

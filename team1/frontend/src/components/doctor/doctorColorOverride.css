@@ -6,15 +6,16 @@
 
 /* Replace ALL generic colors with your blue theme */
 
-/* Replace purple/pink/generic gradients with blue */
-*[style*="linear-gradient"] {
-  background: linear-gradient(135deg, #0B264C 0%) !important;
-}
-
-/* Replace all gray/generic headers with dark blue */
-/* (Note: Headers in dark backgrounds are overridden below with white) */
-h1, h2, h3, h4, h5, h6 {
-  color: #0A4B66;
+/* NOTE: removed a malformed global rule that forced EVERY inline gradient to
+   `linear-gradient(135deg, #0B264C 0%)` (a single color stop is invalid and
+   flattened all intended gradients app-wide). Brand color now lives in
+   tokens.css (--c-navy-900). Headings are no longer globally recolored here —
+   that bled into the patient/admin/landing portals. Scope heading color to
+   the doctor portal instead. */
+.doctor-navbar h1, .doctor-navbar h2, .doctor-navbar h3,
+.doctor-portal h1, .doctor-portal h2, .doctor-portal h3,
+.doctor-portal h4, .doctor-portal h5, .doctor-portal h6 {
+  color: var(--c-navy-900);
 }
 
 /* Replace generic primary colors with medium blue */
@@ -57,31 +58,18 @@ button[class*="secondary"],
   border-color: #E0E9F8 !important;
 }
 
-/* Replace hover backgrounds with light blue */
-*:hover {
-  border-color: #2C5F9F;
+/* Icons tinted blue — scoped to the doctor portal (was a global `svg` rule
+   that recolored icons across every portal). */
+.doctor-portal .metric-icon svg,
+.doctor-portal .metric-icon svg *,
+.doctor-portal .icon:not(.btn-primary .icon):not(button .icon) {
+  color: #2C5F9F;
 }
 
-/* Replace generic icons with medium blue (only on light backgrounds) */
-svg:not(.btn-primary svg):not(button svg):not([class*="navbar"] svg):not([class*="header"] svg),
-.metric-icon svg,
-.metric-icon svg *,
-.icon:not(.btn-primary .icon):not(button .icon),
-[class*="icon"]:not(.btn-primary [class*="icon"]):not(button [class*="icon"]) {
-  color: #2C5F9F !important;
-}
-
-/* Replace focus colors with medium blue */
-*:focus {
-  border-color: #2C5F9F !important;
-  box-shadow: 0 0 0 3px rgba(44, 95, 159, 0.1) !important;
-}
-
-/* Replace generic backgrounds with light blue */
-div[class*="background"],
-div[class*="bg"] {
-  background-color: #E0E9F8;
-}
+/* Removed global `*:hover { border-color }`, `*:focus { ... }`, and
+   `div[class*=bg] { background }` — they repainted borders/focus rings/
+   backgrounds on every element in the app. Focus is handled accessibly
+   and globally by :focus-visible in tokens.css. */
 
 /* Replace loading spinner colors */
 .loading-spinner, [class*="spinner"] {
@@ -89,13 +77,13 @@ div[class*="bg"] {
   border-top-color: #2C5F9F !important;
 }
 
-/* Replace link colors */
-a {
-  color: #2C5F9F !important;
+/* Link colors — scoped to the doctor portal (was a global `a !important`
+   that overrode link color in the patient/admin/landing portals too). */
+.doctor-portal a {
+  color: #2C5F9F;
 }
-
-a:hover {
-  color: #1E4270 !important;
+.doctor-portal a:hover {
+  color: #1E4270;
 }
 
 /* Replace badge/status colors (keep functional ones like success/danger) */

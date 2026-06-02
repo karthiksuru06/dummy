@@ -13,7 +13,7 @@
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: var(--z-sticky);
   backdrop-filter: blur(10px);
 }
 
@@ -188,7 +188,7 @@
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.25s ease;
-  z-index: 9999;
+  z-index: var(--z-dropdown);
   overflow: hidden;
 }
 
