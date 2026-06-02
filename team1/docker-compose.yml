@@ -1,0 +1,85 @@
+# Local/production-like orchestration for the MEDviz MERN stack.
+# Copy backend/.env.sample -> backend/.env and fill secrets before `docker compose up`.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - medviz
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - medviz
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      PORT: 5000
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/medviz}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3}
+      # JWT_SECRET, ADMIN_REGISTRATION_SECRET, SMTP_EMAIL, SMTP_PASSWORD
+      # come from ./backend/.env (no safe defaults).
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - medviz
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the static bundle at build time.
+        REACT_APP_API_BASE: ${REACT_APP_API_BASE:-http://localhost:5000}
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - medviz
+
+  # Optional local LLM. After first start, pull a model, e.g.:
+  #   docker compose exec ollama ollama pull llama3
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - medviz
+
+volumes:
+  mongo-data:
+  ollama-data:
+
+networks:
+  medviz:
+    driver: bridge

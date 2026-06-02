@@ -15,8 +15,14 @@ const doctorSelf = [authenticate, requireRole('doctor', 'admin'), ensureSelfOrAd
 // Get available doctors
 router.get('/available', async (req, res) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
     // Only fetch approved doctors
-    const doctors = await Doctor.find({ status: 'approved' }, '-password');
+    const doctors = await Doctor.find({ status: 'approved' }, '-password')
+      .skip(skip)
+      .limit(limit);
 
     // Helper function to determine availability type
     const determineAvailability = (doctor) => {

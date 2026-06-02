@@ -108,7 +108,7 @@ const autoCompleteOldAppointments = async (doctorId) => {
 // Create a new appointment
 router.post('/', async (req, res) => {
   try {
-    const {
+    let {
       patient_id,
       doctor_id,
       patient_name,
@@ -117,6 +117,17 @@ router.post('/', async (req, res) => {
       appointment_time,
       reason
     } = req.body;
+
+    // Identity binding: never trust client-supplied ids for the caller's own
+    // side. A patient can only book as themselves; a doctor only as themselves.
+    if (req.user.role === 'patient') {
+      patient_id = req.user.id;
+      const acct = await Patient.findById(req.user.id).select('full_name last_name');
+      if (acct) patient_name = `${acct.full_name || ''} ${acct.last_name || ''}`.trim();
+    } else if (req.user.role === 'doctor') {
+      doctor_id = req.user.id;
+    }
+    // admin may pass explicit ids.
 
     // Check for conflicting appointments
     const existingAppointment = await Appointment.findOne({
@@ -216,7 +227,7 @@ router.post('/', async (req, res) => {
 // Book appointment endpoint (for patient appointment booking)
 router.post('/book', async (req, res) => {
   try {
-    const {
+    let {
       patientId,
       doctorId,
       doctorName,
@@ -229,6 +240,14 @@ router.post('/book', async (req, res) => {
       notes,
       status
     } = req.body;
+
+    // Identity binding (see POST '/'): a patient books only as themselves.
+    if (req.user.role === 'patient') {
+      patientId = req.user.id;
+      const acct = await Patient.findById(req.user.id).select('full_name last_name');
+      if (acct) patientName = `${acct.full_name || ''} ${acct.last_name || ''}`.trim();
+    }
+    // doctors/admins booking on behalf of a patient keep the supplied patientId.
 
     // Check for conflicting appointments
     const existingAppointment = await Appointment.findOne({

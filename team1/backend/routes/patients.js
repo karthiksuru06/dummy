@@ -173,105 +173,6 @@ router.get('/doctor/:doctorId', async (req, res) => {
   }
 });
 
-// Get patient details with reports and prescriptions
-router.get('/:patientId', async (req, res) => {
-  try {
-    const { patientId } = req.params;
-
-    const patient = await Patient.findById(patientId).select('-password');
-    if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: 'Patient not found'
-      });
-    }
-
-    // Get patient reports
-    const reports = await Report.find({ patient_id: patientId })
-      .sort({ uploadedDate: -1 });
-
-    // Get patient prescriptions
-    const prescriptions = await Prescription.find({ patient_id: patientId })
-      .populate('doctor_id', 'full_name last_name specialization')
-      .sort({ created_at: -1 });
-
-    // Get consultation history
-    const consultations = await Appointment.find({
-      patient_id: patientId,
-      status: 'completed'
-    })
-    .populate('doctor_id', 'full_name last_name specialization')
-    .sort({ appointment_date: -1 });
-
-    // Calculate age
-    const age = patient.dob ?
-      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
-      null;
-
-    res.json({
-      success: true,
-      patient: {
-        _id: patient._id,
-        name: `${patient.full_name} ${patient.last_name}`,
-        email: patient.email,
-        phone: patient.phone,
-        age,
-        gender: patient.gender,
-        blood_group: patient.blood_group,
-        address: patient.address,
-        emergency_contact: patient.emergency_contact,
-        medical_history: patient.medical_history,
-        current_medications: patient.current_medications,
-        height: patient.height,
-        weight: patient.weight,
-        bpm: patient.bpm,
-        reports,
-        prescriptions,
-        consultations
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching patient details:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching patient details',
-      error: error.message
-    });
-  }
-});
-
-// Get patient appointments
-router.get('/:patientId/appointments', async (req, res) => {
-  try {
-    const { patientId } = req.params;
-    const { status } = req.query; // Optional filter by status
-
-    // Auto-complete appointments that are 6+ hours past scheduled time
-    await autoCompleteOldAppointments(patientId);
-
-    const query = { patient_id: patientId };
-    if (status) {
-      query.status = status;
-    }
-
-    const appointments = await Appointment.find(query)
-      .populate('doctor_id', 'full_name last_name specialization clinic_name clinic_address')
-      .sort({ appointment_date: 1, appointment_time: 1 }); // Sort by upcoming first
-
-    res.json({
-      success: true,
-      appointments
-    });
-  } catch (error) {
-    console.error('Error fetching patient appointments:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching appointments',
-      error: error.message
-    });
-  }
-});
-
 // Get authenticated patient's profile (using token)
 router.get('/profile', async (req, res) => {
   try {
@@ -369,56 +270,6 @@ router.get('/profile', async (req, res) => {
   }
 });
 
-// Get patient profile for dashboard
-router.get('/:patientId/profile', async (req, res) => {
-  try {
-    const { patientId } = req.params;
-
-    const patient = await Patient.findById(patientId).select('-password');
-    if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: 'Patient not found'
-      });
-    }
-
-    // Calculate age
-    const age = patient.dob ?
-      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
-      null;
-
-    res.json({
-      success: true,
-      profile: {
-        _id: patient._id,
-        name: `${patient.full_name} ${patient.last_name}`,
-        full_name: patient.full_name,
-        last_name: patient.last_name,
-        email: patient.email,
-        phone: patient.phone,
-        age,
-        dob: patient.dob,
-        gender: patient.gender,
-        address: patient.address,
-        emergency_contact: patient.emergency_contact,
-        blood_group: patient.blood_group,
-        medical_history: patient.medical_history,
-        current_medications: patient.current_medications,
-        height: patient.height,
-        weight: patient.weight,
-        bpm: patient.bpm
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching patient profile:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching patient profile',
-      error: error.message
-    });
-  }
-});
-
 // Update authenticated patient's profile (using token)
 router.put('/profile', async (req, res) => {
   try {
@@ -457,90 +308,6 @@ router.put('/profile', async (req, res) => {
 
     const patientId = decoded.id;
 
-    const updates = req.body;
-
-    // Remove fields that shouldn't be updated directly
-    delete updates.password;
-    delete updates.email; // Email shouldn't be changed this way
-    delete updates._id;
-    delete updates.created_at;
-
-    // Find patient
-    const patient = await Patient.findById(patientId);
-    if (!patient) {
-      return res.status(404).json({
-        success: false,
-        message: 'Patient not found'
-      });
-    }
-
-    // Update allowed fields
-    const allowedFields = [
-      'full_name',
-      'last_name',
-      'phone',
-      'address',
-      'emergency_contact',
-      'blood_group',
-      'medical_history',
-      'current_medications',
-      'height',
-      'weight',
-      'bpm',
-      'dob',
-      'gender'
-    ];
-
-    allowedFields.forEach(field => {
-      if (updates[field] !== undefined) {
-        patient[field] = updates[field];
-      }
-    });
-
-    await patient.save();
-
-    // Calculate age
-    const age = patient.dob ?
-      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
-      null;
-
-    res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      profile: {
-        _id: patient._id,
-        name: `${patient.full_name} ${patient.last_name}`,
-        full_name: patient.full_name,
-        last_name: patient.last_name,
-        email: patient.email,
-        phone: patient.phone,
-        age,
-        dob: patient.dob,
-        gender: patient.gender,
-        address: patient.address,
-        emergency_contact: patient.emergency_contact,
-        blood_group: patient.blood_group,
-        medical_history: patient.medical_history,
-        current_medications: patient.current_medications,
-        height: patient.height,
-        weight: patient.weight,
-        bpm: patient.bpm
-      }
-    });
-  } catch (error) {
-    console.error('Error updating patient profile:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating patient profile',
-      error: error.message
-    });
-  }
-});
-
-// Update patient profile
-router.put('/:patientId/profile', async (req, res) => {
-  try {
-    const { patientId } = req.params;
     const updates = req.body;
 
     // Remove fields that shouldn't be updated directly
@@ -702,6 +469,239 @@ router.put('/changePassword', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error changing password',
+      error: error.message
+    });
+  }
+});
+
+// Get patient details with reports and prescriptions
+router.get('/:patientId', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    const patient = await Patient.findById(patientId).select('-password');
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found'
+      });
+    }
+
+    // Get patient reports
+    const reports = await Report.find({ patient_id: patientId })
+      .sort({ uploadedDate: -1 });
+
+    // Get patient prescriptions
+    const prescriptions = await Prescription.find({ patient_id: patientId })
+      .populate('doctor_id', 'full_name last_name specialization')
+      .sort({ created_at: -1 });
+
+    // Get consultation history
+    const consultations = await Appointment.find({
+      patient_id: patientId,
+      status: 'completed'
+    })
+    .populate('doctor_id', 'full_name last_name specialization')
+    .sort({ appointment_date: -1 });
+
+    // Calculate age
+    const age = patient.dob ?
+      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
+      null;
+
+    res.json({
+      success: true,
+      patient: {
+        _id: patient._id,
+        name: `${patient.full_name} ${patient.last_name}`,
+        email: patient.email,
+        phone: patient.phone,
+        age,
+        gender: patient.gender,
+        blood_group: patient.blood_group,
+        address: patient.address,
+        emergency_contact: patient.emergency_contact,
+        medical_history: patient.medical_history,
+        current_medications: patient.current_medications,
+        height: patient.height,
+        weight: patient.weight,
+        bpm: patient.bpm,
+        reports,
+        prescriptions,
+        consultations
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching patient details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching patient details',
+      error: error.message
+    });
+  }
+});
+
+// Get patient appointments
+router.get('/:patientId/appointments', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const { status } = req.query; // Optional filter by status
+
+    // Auto-complete appointments that are 6+ hours past scheduled time
+    await autoCompleteOldAppointments(patientId);
+
+    const query = { patient_id: patientId };
+    if (status) {
+      query.status = status;
+    }
+
+    const appointments = await Appointment.find(query)
+      .populate('doctor_id', 'full_name last_name specialization clinic_name clinic_address')
+      .sort({ appointment_date: 1, appointment_time: 1 }); // Sort by upcoming first
+
+    res.json({
+      success: true,
+      appointments
+    });
+  } catch (error) {
+    console.error('Error fetching patient appointments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching appointments',
+      error: error.message
+    });
+  }
+});
+
+// Get patient profile for dashboard
+router.get('/:patientId/profile', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    const patient = await Patient.findById(patientId).select('-password');
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found'
+      });
+    }
+
+    // Calculate age
+    const age = patient.dob ?
+      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
+      null;
+
+    res.json({
+      success: true,
+      profile: {
+        _id: patient._id,
+        name: `${patient.full_name} ${patient.last_name}`,
+        full_name: patient.full_name,
+        last_name: patient.last_name,
+        email: patient.email,
+        phone: patient.phone,
+        age,
+        dob: patient.dob,
+        gender: patient.gender,
+        address: patient.address,
+        emergency_contact: patient.emergency_contact,
+        blood_group: patient.blood_group,
+        medical_history: patient.medical_history,
+        current_medications: patient.current_medications,
+        height: patient.height,
+        weight: patient.weight,
+        bpm: patient.bpm
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching patient profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching patient profile',
+      error: error.message
+    });
+  }
+});
+
+// Update patient profile
+router.put('/:patientId/profile', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const updates = req.body;
+
+    // Remove fields that shouldn't be updated directly
+    delete updates.password;
+    delete updates.email; // Email shouldn't be changed this way
+    delete updates._id;
+    delete updates.created_at;
+
+    // Find patient
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: 'Patient not found'
+      });
+    }
+
+    // Update allowed fields
+    const allowedFields = [
+      'full_name',
+      'last_name',
+      'phone',
+      'address',
+      'emergency_contact',
+      'blood_group',
+      'medical_history',
+      'current_medications',
+      'height',
+      'weight',
+      'bpm',
+      'dob',
+      'gender'
+    ];
+
+    allowedFields.forEach(field => {
+      if (updates[field] !== undefined) {
+        patient[field] = updates[field];
+      }
+    });
+
+    await patient.save();
+
+    // Calculate age
+    const age = patient.dob ?
+      Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000)) :
+      null;
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      profile: {
+        _id: patient._id,
+        name: `${patient.full_name} ${patient.last_name}`,
+        full_name: patient.full_name,
+        last_name: patient.last_name,
+        email: patient.email,
+        phone: patient.phone,
+        age,
+        dob: patient.dob,
+        gender: patient.gender,
+        address: patient.address,
+        emergency_contact: patient.emergency_contact,
+        blood_group: patient.blood_group,
+        medical_history: patient.medical_history,
+        current_medications: patient.current_medications,
+        height: patient.height,
+        weight: patient.weight,
+        bpm: patient.bpm
+      }
+    });
+  } catch (error) {
+    console.error('Error updating patient profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating patient profile',
       error: error.message
     });
   }

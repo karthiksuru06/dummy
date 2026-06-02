@@ -66,4 +66,8 @@ const prescriptionSchema = new mongoose.Schema({
   }
 });
 
+prescriptionSchema.index({ patient_id: 1 });
+prescriptionSchema.index({ doctor_id: 1 });
+prescriptionSchema.index({ appointment_id: 1 });
+
 module.exports = mongoose.model('Prescription', prescriptionSchema);

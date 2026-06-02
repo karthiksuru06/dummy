@@ -36,4 +36,6 @@ const reportSchema = new mongoose.Schema({
   }
 });
 
+reportSchema.index({ patient_id: 1 });
+
 module.exports = mongoose.model('Report', reportSchema);

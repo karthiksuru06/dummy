@@ -28,18 +28,15 @@ const DoctorSettings = () => {
   const fetchSettings = async (docId) => {
     try {
       setLoading(true);
-      const response = await doctorService.getDoctorSettings(docId);
+      const response = await doctorService.getSettings(docId);
       const settingsData = response.settings || response;
 
       setSettings({
         twoFactorAuth: settingsData.two_factor_enabled || false,
-        blockSuspiciousLogin: true,
+        blockSuspiciousLogin: settingsData.block_suspicious_login ?? true,
         sessionTimeout: settingsData.session_timeout || '30',
-        allowNotifications:
-          settingsData.email_notifications ||
-          settingsData.sms_notifications ||
-          true,
-        emailNotifications: settingsData.email_notifications || true,
+        allowNotifications: settingsData.allow_notifications ?? true,
+        emailNotifications: settingsData.email_notifications || false,
         smsNotifications: settingsData.sms_notifications || false
       });
     } catch (error) {
@@ -55,12 +52,14 @@ const DoctorSettings = () => {
 
       const settingsData = {
         two_factor_enabled: settings.twoFactorAuth,
+        block_suspicious_login: settings.blockSuspiciousLogin,
         session_timeout: settings.sessionTimeout,
+        allow_notifications: settings.allowNotifications,
         email_notifications: settings.emailNotifications,
         sms_notifications: settings.smsNotifications
       };
 
-      await doctorService.updateDoctorSettings(doctorId, settingsData);
+      await doctorService.updateSettings(doctorId, settingsData);
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error.message);

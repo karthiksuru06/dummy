@@ -63,7 +63,6 @@ const FindDoctors = () => {
                 </div>
 
                 <div className="doctor-info">
-                  <div className="doctor-badge online"><span className="online-dot"></span> online</div>
                   <h3 className="doctor-name">{doctor.name}</h3>
                   <p className="doctor-specialty">{doctor.specialization}</p>
                   {doctor.degree && <p className="doctor-degree">{doctor.degree}</p>}
@@ -73,14 +72,16 @@ const FindDoctors = () => {
                     <div className="meta-item"><strong>Location:</strong> <span>{doctor.clinic_name || doctor.location || '—'}</span></div>
                   </div>
 
-                  <div className="doctor-rating">
-                    <div className="stars">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i} className={`star ${i < Math.round(doctor.rating || 4) ? 'filled' : ''}`}>★</span>
-                      ))}
+                  {doctor.rating != null && (
+                    <div className="doctor-rating">
+                      <div className="stars">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span key={i} className={`star ${i < Math.round(doctor.rating) ? 'filled' : ''}`}>★</span>
+                        ))}
+                      </div>
+                      <div className="rating-text">{doctor.rating.toFixed(1)} ({doctor.reviews || 0} reviews)</div>
                     </div>
-                    <div className="rating-text">{(doctor.rating || 4).toFixed(1)} ({doctor.reviews || 0} reviews)</div>
-                  </div>
+                  )}
                 </div>
 
                 <button className="consult-btn" onClick={() => navigate(`/doctor/${doctor.id || ''}`)}>Consult Doctor</button>

@@ -140,6 +140,24 @@ const MyAppointments = () => {
     }
   };
 
+  const handleCancel = async (appointment) => {
+    const reason = window.prompt(
+      `Cancel your appointment on ${formatShortDate(appointment.appointment_date)} at ${appointment.appointment_time}?\n\nOptionally add a reason:`
+    );
+    // prompt returns null when the user clicks Cancel on the dialog
+    if (reason === null) return;
+
+    try {
+      await API.delete(`/appointments/${appointment._id}`, {
+        data: { cancellation_reason: reason || 'Cancelled by patient' }
+      });
+      await fetchAppointments();
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      alert('Failed to cancel appointment. Please try again.');
+    }
+  };
+
   const handleViewReport = (appointment) => {
     setSelectedPrescription(appointment);
     setShowPrescriptionModal(true);
@@ -347,6 +365,14 @@ const MyAppointments = () => {
                         onClick={() => handleViewReport(appointment)}
                       >
                         View Report
+                      </button>
+                    )}
+                    {['pending', 'scheduled', 'rescheduled'].includes(appointment.status) && (
+                      <button
+                        className="action-btn danger"
+                        onClick={() => handleCancel(appointment)}
+                      >
+                        Cancel Appointment
                       </button>
                     )}
                   </div>

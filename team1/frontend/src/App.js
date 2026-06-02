@@ -139,16 +139,6 @@ function App() {
             <Reports />
           </ProtectedRoute>
         } />
-        <Route path="/appointments" element={
-          <ProtectedRoute requiredRole="patient">
-            <div>Appointments Coming Soon</div>
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute requiredRole="patient">
-            <div>Settings Coming Soon</div>
-          </ProtectedRoute>
-        } />
         <Route path="/finddoctors" element={
           <ProtectedRoute requiredRole="patient">
             <FindDoctorPage />

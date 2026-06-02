@@ -26,7 +26,7 @@ const DoctorHome = () => {
   });
   const [loading, setLoading] = useState(true);
   const [doctorInfo, setDoctorInfo] = useState(null);
-  const [memo, setMemo] = useState("Shift A: Surgery at 10 AM. Ward round check for Patient 09.");
+  const [memo, setMemo] = useState("");
   const [activeTab, setActiveTab] = useState('queue');
   const [notifications, setNotifications] = useState([]);
 
@@ -38,11 +38,21 @@ const DoctorHome = () => {
     }
   }, []);
 
+  const formatRelativeTime = (timestamp) => {
+    if (!timestamp) return '';
+    const diffMs = Date.now() - new Date(timestamp).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${Math.floor(diffHours / 24)}d ago`;
+  };
+
   const fetchDashboardData = async (doctorId) => {
     try {
       setLoading(true);
-      // Realistic dummy data for "Impressive" look if API returns empty
-      let metricsRes = { metrics: { totalConsultations: 124, monthConsultations: 12, todayAppointments: 8, pendingApprovals: 3 } };
+      let metricsRes = { metrics: null };
       let upcomingRes = { appointments: [] };
       let pendingRes = { appointments: [] };
       let notificationsRes = { notifications: [] };
@@ -70,7 +80,7 @@ const DoctorHome = () => {
       const formattedNotifications = notificationsRes.notifications?.slice(0, 5).map(notif => ({
         id: notif._id,
         message: notif.message,
-        time: '2m ago',
+        time: formatRelativeTime(notif.created_at),
         unread: !notif.is_read
       })) || [];
 
@@ -78,10 +88,10 @@ const DoctorHome = () => {
         upcomingAppointments: formattedUpcoming,
         pendingApprovals: formattedPending,
         consultationMetrics: metricsRes.metrics || {
-          totalConsultations: 124,
-          monthConsultations: 12,
-          todayAppointments: 8,
-          pendingApprovals: 3
+          totalConsultations: 0,
+          monthConsultations: 0,
+          todayAppointments: 0,
+          pendingApprovals: 0
         },
         notifications: formattedNotifications
       });
@@ -93,19 +103,32 @@ const DoctorHome = () => {
     }
   };
 
-  const handleAction = (id, type) => {
-    setDashboardData(prev => ({
-      ...prev,
-      pendingApprovals: prev.pendingApprovals.filter(a => a.id !== id)
-    }));
-    
-    const toastMsg = type === 'approve' ? 'Appointment Confirmed' : 'Request Declined';
-    const newNotif = { id: Date.now(), message: toastMsg, type };
+  const pushToast = (message, type) => {
+    const newNotif = { id: Date.now(), message, type };
     setNotifications(prev => [newNotif, ...prev]);
-    
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
     }, 3000);
+  };
+
+  const handleAction = async (id, type) => {
+    try {
+      if (type === 'approve') {
+        await doctorService.approveAppointment(id);
+      } else {
+        await doctorService.rejectAppointment(id);
+      }
+
+      setDashboardData(prev => ({
+        ...prev,
+        pendingApprovals: prev.pendingApprovals.filter(a => a.id !== id)
+      }));
+
+      pushToast(type === 'approve' ? 'Appointment Confirmed' : 'Request Declined', type);
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      pushToast(type === 'approve' ? 'Failed to confirm appointment' : 'Failed to decline request', 'reject');
+    }
   };
 
   if (loading) {
@@ -173,14 +196,14 @@ const DoctorHome = () => {
       {/* 🚀 High-Octane Metric Hub */}
       <div className="dr-metrics-grid">
          {[
-           { label: 'Consultations', val: dashboardData.consultationMetrics.totalConsultations, icon: <FaChartLine />, color: '#6366f1', trend: '+12%', path: '/doctor/patients' },
-           { label: 'Growth', val: `${dashboardData.consultationMetrics.monthConsultations}%`, icon: <MdTrendingUp />, color: '#10b981', trend: 'Steady', path: '/doctor/appointments' },
-           { label: 'Today\'s Load', val: dashboardData.consultationMetrics.todayAppointments, icon: <FaUserInjured />, color: '#0ea5e9', trend: 'Live', path: '/doctor/appointments' },
-           { label: 'Inbox Status', val: dashboardData.pendingApprovals.length, icon: <FaBell />, color: '#f43f5e', trend: 'Priority', path: '/doctor/appointments' }
+           { label: 'Consultations', val: dashboardData.consultationMetrics.totalConsultations, icon: <FaChartLine />, color: '#6366f1', path: '/doctor/patients' },
+           { label: 'This Month', val: dashboardData.consultationMetrics.monthConsultations, icon: <MdTrendingUp />, color: '#10b981', path: '/doctor/appointments' },
+           { label: 'Today\'s Load', val: dashboardData.consultationMetrics.todayAppointments, icon: <FaUserInjured />, color: '#0ea5e9', path: '/doctor/appointments' },
+           { label: 'Inbox Status', val: dashboardData.pendingApprovals.length, icon: <FaBell />, color: '#f43f5e', path: '/doctor/appointments' }
          ].map((stat, i) => (
-           <motion.div 
-             key={i} 
-             variants={cardVariants} 
+           <motion.div
+             key={i}
+             variants={cardVariants}
              whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.05)" }}
              className="dr-metric-pill"
              onClick={() => navigate(stat.path)}
@@ -190,7 +213,6 @@ const DoctorHome = () => {
                  <p>{stat.label}</p>
                  <h2>{stat.val}</h2>
               </div>
-              <span className="pill-trend" style={{ color: stat.color }}>{stat.trend}</span>
            </motion.div>
          ))}
       </div>
@@ -285,20 +307,20 @@ const DoctorHome = () => {
            />
         </motion.section>
 
-        {/* 05: Activity Insight (The Visual Card) */}
+        {/* 05: Recent Activity (notifications feed) */}
         <motion.section variants={cardVariants} className="bento-card dr-feed-prestige">
            <div className="card-head">
-              <h3>Insights</h3>
+              <h3>Recent Activity</h3>
            </div>
            <div className="insight-body">
-              <div className="mini-chart">
-                 <div className="bar" style={{ height: '40%' }} />
-                 <div className="bar" style={{ height: '70%' }} />
-                 <div className="bar" style={{ height: '55%' }} />
-                 <div className="bar" style={{ height: '90%' }} />
-                 <div className="bar" style={{ height: '65%' }} />
-              </div>
-              <p className="insight-msg">Session activity is 15% higher than previous. Recommend opening Ward C slots.</p>
+              {dashboardData.notifications.length > 0 ? (
+                dashboardData.notifications.map(notif => (
+                  <div key={notif.id} className={`activity-row ${notif.unread ? 'unread' : ''}`}>
+                     <p className="activity-msg">{notif.message}</p>
+                     {notif.time && <span className="activity-time">{notif.time}</span>}
+                  </div>
+                ))
+              ) : <div className="empty-prestige">No activity yet</div>}
            </div>
         </motion.section>
 

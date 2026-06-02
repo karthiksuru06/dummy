@@ -405,26 +405,34 @@
   flex-direction: column;
 }
 
-.mini-chart {
+.activity-row {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 60px;
-  margin-bottom: 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.mini-chart .bar {
-  flex: 1;
-  background: #0d9488;
-  border-radius: 4px;
-  opacity: 0.6;
+.activity-row:last-child {
+  border-bottom: none;
 }
 
-.insight-msg {
+.activity-row.unread .activity-msg {
+  font-weight: 700;
+}
+
+.activity-msg {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #0f766e;
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
 }
 
 /* 📱 Responsive Engineering */
@@ -450,8 +458,5 @@
 }
 /* ?? Prestige Animations Hub */
 @keyframes pulse-prestige { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); } 70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); } }
-.pill-trend { animation: pulse-prestige 3s infinite; }
-.mini-chart .bar { transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.mini-chart:hover .bar { transform: scaleY(1.2); opacity: 1; }
 .hub-tile:active { transform: scale(0.95); }
 .confirm-btn:active, .reject-btn:active { transform: scale(0.9); }

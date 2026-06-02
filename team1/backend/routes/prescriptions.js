@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const PDFDocument = require('pdfkit');
 const Prescription = require('../models/Prescription');
 const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
@@ -44,7 +45,7 @@ async function apptParamParticipantOrAdmin(req, res, next) {
 // Create a new prescription
 router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
   try {
-    const {
+    let {
       appointment_id,
       patient_id,
       doctor_id,
@@ -56,6 +57,12 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
       tests_recommended,
       additional_advice
     } = req.body;
+
+    // Identity binding: a doctor always prescribes as themselves (no
+    // impersonation via a body doctor_id). Admins may pass an explicit one.
+    if (req.user.role === 'doctor') {
+      doctor_id = req.user.id;
+    }
 
     // If patient_id is not provided, try to get it from the appointment
     let finalPatientId = patient_id;
@@ -79,6 +86,15 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
         success: false,
         message: 'Doctor ID is required'
       });
+    }
+
+    // A doctor may only prescribe for a patient they have a real appointment
+    // with (prevents writing prescriptions for arbitrary patients).
+    if (req.user.role === 'doctor') {
+      const link = await Appointment.findOne({ doctor_id: req.user.id, patient_id: finalPatientId });
+      if (!link) {
+        return res.status(403).json({ success: false, message: 'No appointment with this patient' });
+      }
     }
 
     const prescription = new Prescription({
@@ -237,7 +253,7 @@ router.get('/appointment/:appointmentId', validateObjectIdParam('appointmentId')
   }
 });
 
-// Download prescription as PDF (placeholder - returns JSON for now)
+// Download prescription as a PDF document
 router.get('/:id/download', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -253,41 +269,121 @@ router.get('/:id/download', validateObjectIdParam('id'), loadPrescription, rxPar
       });
     }
 
-    // In a real application, you would generate a PDF here
-    // For now, return formatted data that can be used to generate PDF on frontend
-    res.json({
-      success: true,
-      message: 'Prescription data for PDF generation',
-      data: {
-        prescriptionId: prescription._id,
-        date: prescription.created_at,
-        doctor: {
-          name: prescription.doctor_id ? `Dr. ${prescription.doctor_id.full_name} ${prescription.doctor_id.last_name}` : 'Unknown Doctor',
-          specialization: prescription.doctor_id?.specialization || 'N/A',
-          clinic: prescription.doctor_id?.clinic_name || 'N/A',
-          address: prescription.doctor_id?.clinic_address || 'N/A',
-          phone: prescription.doctor_id?.phone || 'N/A'
-        },
-        patient: {
-          name: prescription.patient_name,
-          age: prescription.patient_age,
-          gender: prescription.patient_gender,
-          bloodGroup: prescription.patient_id?.blood_group || 'N/A',
-          phone: prescription.patient_id?.phone || 'N/A'
-        },
-        diagnosis: prescription.diagnosis,
-        medicines: prescription.medicines,
-        testsRecommended: prescription.tests_recommended,
-        additionalAdvice: prescription.additional_advice
-      }
+    const doctorName = prescription.doctor_id
+      ? `Dr. ${prescription.doctor_id.full_name} ${prescription.doctor_id.last_name}`
+      : 'Unknown Doctor';
+    const specialization = prescription.doctor_id?.specialization || 'N/A';
+    const clinicName = prescription.doctor_id?.clinic_name || '';
+    const clinicAddress = prescription.doctor_id?.clinic_address || '';
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="prescription-${prescription._id}.pdf"`);
+    doc.pipe(res);
+
+    // Clinic header
+    doc.fillColor('#1a73e8').fontSize(26).font('Helvetica-Bold').text('MEDviz', { align: 'center' });
+    doc.fillColor('#000000').fontSize(10).font('Helvetica')
+      .text('MEDviz Telemedicine', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#1a73e8').stroke();
+    doc.moveDown(1);
+
+    // Meta: prescription id + date
+    const dateStr = new Date(prescription.created_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
     });
+    doc.fontSize(10).fillColor('#000000');
+    doc.font('Helvetica-Bold').text('Prescription ID: ', { continued: true })
+      .font('Helvetica').text(String(prescription._id));
+    doc.font('Helvetica-Bold').text('Date: ', { continued: true })
+      .font('Helvetica').text(dateStr);
+    doc.moveDown(1);
+
+    // Doctor block
+    doc.font('Helvetica-Bold').fontSize(12).text(doctorName);
+    doc.font('Helvetica').fontSize(10).text(specialization);
+    if (clinicName) doc.text(clinicName);
+    if (clinicAddress) doc.text(clinicAddress);
+    doc.moveDown(1);
+
+    // Patient block
+    doc.font('Helvetica-Bold').fontSize(11).text('Patient');
+    doc.font('Helvetica').fontSize(10);
+    doc.text(`Name: ${prescription.patient_name || 'N/A'}`);
+    doc.text(`Age: ${prescription.patient_age != null ? prescription.patient_age : 'N/A'}    Gender: ${prescription.patient_gender || 'N/A'}`);
+    doc.moveDown(1);
+
+    // Diagnosis
+    doc.font('Helvetica-Bold').fontSize(11).text('Diagnosis');
+    doc.font('Helvetica').fontSize(10).text(prescription.diagnosis || 'N/A');
+    doc.moveDown(1);
+
+    // Medicines table
+    doc.font('Helvetica-Bold').fontSize(11).text('Medicines');
+    doc.moveDown(0.3);
+    const tableTop = doc.y;
+    const cols = [50, 220, 320, 410]; // Medicine, Dosage, Duration, Notes
+    const colWidths = [165, 95, 85, 135];
+    const headers = ['Medicine', 'Dosage', 'Duration', 'Notes'];
+
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#ffffff');
+    doc.rect(50, tableTop, 495, 18).fill('#1a73e8');
+    doc.fillColor('#ffffff');
+    headers.forEach((h, i) => doc.text(h, cols[i] + 3, tableTop + 5, { width: colWidths[i] - 6 }));
+
+    doc.fillColor('#000000').font('Helvetica').fontSize(9);
+    let rowY = tableTop + 18;
+    const medicines = Array.isArray(prescription.medicines) ? prescription.medicines : [];
+    if (medicines.length === 0) {
+      doc.text('No medicines prescribed', cols[0] + 3, rowY + 5);
+      rowY += 20;
+    } else {
+      medicines.forEach((m) => {
+        const cells = [m.medicine_name || '', m.dosage || '', m.duration || '', m.notes || ''];
+        const heights = cells.map((c, i) => doc.heightOfString(String(c), { width: colWidths[i] - 6 }));
+        const rowH = Math.max(16, ...heights) + 6;
+        if (rowY + rowH > doc.page.height - 80) {
+          doc.addPage();
+          rowY = 50;
+        }
+        cells.forEach((c, i) => doc.text(String(c), cols[i] + 3, rowY + 3, { width: colWidths[i] - 6 }));
+        doc.rect(50, rowY, 495, rowH).strokeColor('#cccccc').stroke();
+        rowY += rowH;
+      });
+    }
+    doc.y = rowY;
+    doc.moveDown(1.5);
+
+    // Tests recommended
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#000000').text('Tests Recommended');
+    doc.font('Helvetica').fontSize(10).text(prescription.tests_recommended || 'None');
+    doc.moveDown(1);
+
+    // Additional advice
+    doc.font('Helvetica-Bold').fontSize(11).text('Additional Advice');
+    doc.font('Helvetica').fontSize(10).text(prescription.additional_advice || 'None');
+    doc.moveDown(3);
+
+    // Signature line
+    const sigY = doc.y;
+    doc.moveTo(360, sigY).lineTo(545, sigY).strokeColor('#000000').stroke();
+    doc.font('Helvetica').fontSize(10).text(doctorName, 360, sigY + 5, { width: 185, align: 'center' });
+    doc.fontSize(8).fillColor('#666666').text('Signature', 360, sigY + 20, { width: 185, align: 'center' });
+
+    doc.end();
   } catch (error) {
     console.error('Error downloading prescription:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error downloading prescription',
-      error: error.message
-    });
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: 'Error downloading prescription',
+        error: error.message
+      });
+    } else {
+      res.end();
+    }
   }
 });
 

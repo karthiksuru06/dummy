@@ -59,4 +59,6 @@ doctorSettingsSchema.pre('save', function(next) {
   next();
 });
 
+doctorSettingsSchema.index({ doctor_id: 1 }, { unique: true });
+
 module.exports = mongoose.model('DoctorSettings', doctorSettingsSchema);

@@ -169,7 +169,15 @@ router.get('/patients', async (req, res) => {
       };
     }
 
-    const patients = await Patient.find(query).select('-password');
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const total = await Patient.countDocuments(query);
+    const patients = await Patient.find(query)
+      .select('-password')
+      .skip(skip)
+      .limit(limit);
 
     // Get visit count for each patient
     const patientsWithVisits = await Promise.all(
@@ -199,7 +207,10 @@ router.get('/patients', async (req, res) => {
 
     res.json({
       success: true,
-      patients: patientsWithVisits
+      patients: patientsWithVisits,
+      total,
+      page,
+      limit
     });
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -595,9 +606,18 @@ router.get('/prescriptions', async (req, res) => {
       );
     }
 
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const total = filteredPrescriptions.length;
+    const skip = (page - 1) * limit;
+    const paginated = filteredPrescriptions.slice(skip, skip + limit);
+
     res.json({
       success: true,
-      prescriptions: filteredPrescriptions
+      prescriptions: paginated,
+      total,
+      page,
+      limit
     });
   } catch (error) {
     console.error('Error fetching prescriptions:', error);

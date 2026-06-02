@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend syntax gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      # No test script exists yet. Gate on `node --check` of every source file.
+      - name: Syntax check all .js
+        run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
+      - name: Tests (TODO gate)
+        run: 'echo "TODO add backend tests (e.g. jest/supertest) and replace this gate with npm test."'
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build
+        # CI=false so lint warnings do not fail the production build.
+        run: npm run build
+        env:
+          CI: "false"
+      - name: Tests (TODO gate)
+        run: 'echo "TODO add frontend tests and run CI=true npm test here."'

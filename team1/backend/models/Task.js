@@ -77,4 +77,8 @@ taskSchema.pre('save', function(next) {
   next();
 });
 
+taskSchema.index({ doctor_id: 1, status: 1 });
+taskSchema.index({ patient_id: 1 });
+taskSchema.index({ related_appointment_id: 1 });
+
 module.exports = mongoose.model('Task', taskSchema);
