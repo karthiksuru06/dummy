@@ -7,7 +7,7 @@ on:
 
 jobs:
   backend:
-    name: Backend syntax gate
+    name: Backend tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,11 +20,12 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      # No test script exists yet. Gate on `node --check` of every source file.
+      # Fast syntax sweep over every source file before the heavier test run.
       - name: Syntax check all .js
         run: find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check
-      - name: Tests (TODO gate)
-        run: 'echo "TODO add backend tests (e.g. jest/supertest) and replace this gate with npm test."'
+      # Real gate: Jest + Supertest + mongodb-memory-server.
+      - name: Tests
+        run: npm test
 
   frontend:
     name: Frontend build

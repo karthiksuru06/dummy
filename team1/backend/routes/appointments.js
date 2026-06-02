@@ -7,6 +7,7 @@ const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const { requireRole } = require('../middleware/auth');
 const { validateObjectIdParam } = require('../middleware/validate');
+const { sendEmail } = require('../utils/email');
 
 // ---- Ownership guards (router is already authenticated in server.js) ----
 // Loads the appointment so guards/handlers can check the real owner, not a
@@ -527,6 +528,21 @@ router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDo
       related_appointment_id: appointment._id
     });
     await patientTask.save();
+
+    // Best-effort confirmation email to the patient.
+    try {
+      const patient = await Patient.findById(appointment.patient_id).select('email full_name');
+      if (patient && patient.email) {
+        const dateStr = new Date(appointment.appointment_date).toLocaleDateString();
+        await sendEmail({
+          to: patient.email,
+          subject: 'Your appointment is confirmed',
+          text: `Your appointment with ${doctorName} on ${dateStr} at ${appointment.appointment_time} has been confirmed.`
+        });
+      }
+    } catch (emailErr) {
+      console.error('[email] Appointment confirmation failed (non-fatal):', emailErr.message);
+    }
 
     res.json({
       success: true,

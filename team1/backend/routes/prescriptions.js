@@ -8,6 +8,7 @@ const Patient = require('../models/Patient');
 const Task = require('../models/Task');
 const { requireRole } = require('../middleware/auth');
 const { validateObjectIdParam } = require('../middleware/validate');
+const { sendEmail } = require('../utils/email');
 
 // ---- Ownership guards (router is authenticated in server.js) ----
 async function loadPrescription(req, res, next) {
@@ -88,6 +89,18 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
       });
     }
 
+    // Validate the remaining schema-required fields at the boundary so a missing
+    // field returns 400 (was a Mongoose ValidationError → 500).
+    const missing = [];
+    if (!patient_name) missing.push('patient_name');
+    if (patient_age === undefined || patient_age === null || patient_age === '') missing.push('patient_age');
+    if (!patient_gender) missing.push('patient_gender');
+    if (!diagnosis) missing.push('diagnosis');
+    if (!Array.isArray(medicines) || medicines.length === 0) missing.push('medicines');
+    if (missing.length) {
+      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(', ')}` });
+    }
+
     // A doctor may only prescribe for a patient they have a real appointment
     // with (prevents writing prescriptions for arbitrary patients).
     if (req.user.role === 'doctor') {
@@ -162,6 +175,20 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
       }).save();
     } catch (notifyErr) {
       console.error('Prescription notification failed (non-fatal):', notifyErr.message);
+    }
+
+    // Best-effort email to the patient.
+    try {
+      const patient = await Patient.findById(finalPatientId).select('email full_name');
+      if (patient && patient.email) {
+        await sendEmail({
+          to: patient.email,
+          subject: 'Your prescription is ready',
+          text: `Your prescription is ready. Diagnosis: ${diagnosis}`
+        });
+      }
+    } catch (emailErr) {
+      console.error('[email] Prescription email failed (non-fatal):', emailErr.message);
     }
 
     res.status(201).json({

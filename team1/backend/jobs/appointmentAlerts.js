@@ -1,6 +1,20 @@
 const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
 const Doctor = require('../models/Doctor');
+const Patient = require('../models/Patient');
+const { sendEmail } = require('../utils/email');
+
+// Best-effort reminder email for an alert tier. Never throws.
+const sendAlertEmail = async (patientId, subject, text) => {
+  try {
+    const patient = await Patient.findById(patientId).select('email full_name');
+    if (patient && patient.email) {
+      await sendEmail({ to: patient.email, subject, text });
+    }
+  } catch (err) {
+    console.error('[email] Alert email failed (non-fatal):', err.message);
+  }
+};
 
 // Helper function to parse appointment time string
 const parseAppointmentTime = (timeString) => {
@@ -85,6 +99,11 @@ const sendAppointmentAlerts = async () => {
               status: 'pending'
             });
             await patientAlert.save();
+            await sendAlertEmail(
+              appointment.patient_id,
+              'Appointment reminder: 24 hours',
+              `Reminder: Your appointment with ${doctorName} is in 24 hours on ${appointmentDate.toLocaleDateString()} at ${appointment.appointment_time}.`
+            );
 
             alertsSent += 1;
             console.log(`✓ Sent 24-hour alert to patient for appointment ${appointment._id}`);
@@ -114,6 +133,11 @@ const sendAppointmentAlerts = async () => {
               status: 'pending'
             });
             await patientAlert.save();
+            await sendAlertEmail(
+              appointment.patient_id,
+              'Appointment reminder: 1 hour',
+              `Your appointment with ${doctorName} is starting in 1 hour at ${appointment.appointment_time}.`
+            );
 
             alertsSent += 1;
             console.log(`✓ Sent 1-hour alert to patient for appointment ${appointment._id}`);
@@ -147,6 +171,11 @@ const sendAppointmentAlerts = async () => {
               status: 'pending'
             });
             await patientAlert.save();
+            await sendAlertEmail(
+              appointment.patient_id,
+              'Appointment starting in 15 minutes',
+              `URGENT: Your appointment with ${doctorName} is starting in 15 minutes.`
+            );
 
             alertsSent += 1;
             console.log(`✓ Sent 15-minute alert to patient for appointment ${appointment._id}`);
