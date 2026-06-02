@@ -11,58 +11,106 @@ router.get('/metrics', async (req, res) => {
   try {
     const Report = require('../models/Report');
 
-    // Get total counts
-    const totalPatients = await Patient.countDocuments();
-    const totalDoctors = await Doctor.countDocuments({ status: 'approved' });
-    const totalPrescriptions = await Prescription.countDocuments();
-    const totalAppointments = await Appointment.countDocuments();
-    const totalReports = await Report.countDocuments();
-
     // Get today's data
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayCases = await Appointment.countDocuments({
-      appointment_date: { $gte: today, $lt: tomorrow },
-      status: 'completed'
-    });
+    // Start of the 7-day weekly window (today - 6 days)
+    const weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - 6);
 
-    const todayScheduled = await Appointment.countDocuments({
-      appointment_date: { $gte: today, $lt: tomorrow },
-      status: { $in: ['scheduled', 'rescheduled'] }
-    });
+    // Server-local IANA timezone so $dateToString buckets match local-day boundaries
+    const serverTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-    const todayPrescriptions = await Prescription.countDocuments({
-      created_at: { $gte: today, $lt: tomorrow }
-    });
+    // All independent aggregations in a single round-trip each, run in parallel
+    const [
+      patientFacet,
+      doctorCount,
+      prescriptionFacet,
+      appointmentFacet,
+      reportFacet,
+      weeklyAgg
+    ] = await Promise.all([
+      Patient.aggregate([
+        { $facet: { total: [{ $count: 'n' }] } }
+      ]),
+      Doctor.countDocuments({ status: 'approved' }),
+      Prescription.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'n' }],
+            addedToday: [
+              { $match: { created_at: { $gte: today, $lt: tomorrow } } },
+              { $count: 'n' }
+            ]
+          }
+        }
+      ]),
+      Appointment.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'n' }],
+            todayCases: [
+              { $match: { appointment_date: { $gte: today, $lt: tomorrow }, status: 'completed' } },
+              { $count: 'n' }
+            ],
+            todayScheduled: [
+              { $match: { appointment_date: { $gte: today, $lt: tomorrow }, status: { $in: ['scheduled', 'rescheduled'] } } },
+              { $count: 'n' }
+            ]
+          }
+        }
+      ]),
+      Report.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'n' }],
+            updated: [
+              { $match: { uploadedDate: { $gte: today, $lt: tomorrow } } },
+              { $count: 'n' }
+            ]
+          }
+        }
+      ]),
+      // One $group over the 7-day window, bucketed by calendar day
+      Appointment.aggregate([
+        { $match: { appointment_date: { $gte: weekStart, $lt: tomorrow }, status: 'completed' } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$appointment_date', timezone: serverTz } },
+            cases: { $sum: 1 }
+          }
+        }
+      ])
+    ]);
 
-    const todayReports = await Report.countDocuments({
-      uploadedDate: { $gte: today, $lt: tomorrow }
-    });
+    const facetVal = (arr) => (arr && arr[0] && arr[0].n) || 0;
+    const totalPatients = facetVal(patientFacet[0].total);
+    const totalDoctors = doctorCount;
+    const totalPrescriptions = facetVal(prescriptionFacet[0].total);
+    const todayPrescriptions = facetVal(prescriptionFacet[0].addedToday);
+    const totalAppointments = facetVal(appointmentFacet[0].total);
+    const todayCases = facetVal(appointmentFacet[0].todayCases);
+    const todayScheduled = facetVal(appointmentFacet[0].todayScheduled);
+    const totalReports = facetVal(reportFacet[0].total);
+    const todayReports = facetVal(reportFacet[0].updated);
 
-    // Weekly patient cases for chart
-    const weeklyData = [];
+    // Weekly patient cases for chart (preserve Mon-indexed labels, oldest->newest)
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const weeklyCounts = {};
+    weeklyAgg.forEach(d => { weeklyCounts[d._id] = d.cases; });
 
+    const weeklyData = [];
     for (let i = 6; i >= 0; i--) {
       const dayStart = new Date(today);
       dayStart.setDate(dayStart.getDate() - i);
-      dayStart.setHours(0, 0, 0, 0);
-
-      const dayEnd = new Date(dayStart);
-      dayEnd.setDate(dayEnd.getDate() + 1);
-
-      const cases = await Appointment.countDocuments({
-        appointment_date: { $gte: dayStart, $lt: dayEnd },
-        status: 'completed'
-      });
-
+      const key = `${dayStart.getFullYear()}-${String(dayStart.getMonth() + 1).padStart(2, '0')}-${String(dayStart.getDate()).padStart(2, '0')}`;
       const dayIndex = dayStart.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
       weeklyData.push({
-        day: days[dayIndex === 0 ? 6 : dayIndex - 1], // Convert Sunday=0 to index 6, Monday=1 to index 0, etc.
-        cases
+        day: days[dayIndex === 0 ? 6 : dayIndex - 1],
+        cases: weeklyCounts[key] || 0
       });
     }
 
@@ -458,15 +506,58 @@ router.put('/doctors/:id/deactivate', async (req, res) => {
 // Get analytics data
 router.get('/analytics', async (req, res) => {
   try {
-    // Get specialization counts
-    const specializationCounts = await Doctor.aggregate([
-      { $match: { status: 'approved' } },
-      {
-        $group: {
-          _id: '$specialization',
-          count: { $sum: 1 }
+    const serverTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+    // Window start for monthly stats: first day of the month 11 months ago (local)
+    const monthWindowStart = new Date();
+    monthWindowStart.setMonth(monthWindowStart.getMonth() - 11);
+    monthWindowStart.setDate(1);
+    monthWindowStart.setHours(0, 0, 0, 0);
+
+    const [specializationCounts, genderStats, ageBuckets, monthlyAgg] = await Promise.all([
+      // Specialization counts
+      Doctor.aggregate([
+        { $match: { status: 'approved' } },
+        { $group: { _id: '$specialization', count: { $sum: 1 } } }
+      ]),
+      // Gender demographics
+      Patient.aggregate([
+        { $group: { _id: '$gender', count: { $sum: 1 } } }
+      ]),
+      // Age demographics via $bucket over age computed from dob.
+      // Boundaries [0,19,36,51,66,Inf) reproduce <=18, <=35, <=50, <=65, 65+.
+      Patient.aggregate([
+        { $match: { dob: { $ne: null } } },
+        {
+          $project: {
+            age: {
+              $dateDiff: { startDate: '$dob', endDate: '$$NOW', unit: 'year' }
+            }
+          }
+        },
+        {
+          $bucket: {
+            groupBy: '$age',
+            boundaries: [0, 19, 36, 51, 66],
+            default: '65+',
+            output: { count: { $sum: 1 } }
+          }
         }
-      }
+      ]),
+      // Monthly case statistics grouped by year+month in one pass
+      Appointment.aggregate([
+        { $match: { appointment_date: { $gte: monthWindowStart } } },
+        {
+          $group: {
+            _id: {
+              year: { $year: { date: '$appointment_date', timezone: serverTz } },
+              month: { $month: { date: '$appointment_date', timezone: serverTz } }
+            },
+            cases: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+            appointments: { $sum: 1 }
+          }
+        }
+      ])
     ]);
 
     const departmentStats = specializationCounts.map(spec => ({
@@ -474,18 +565,8 @@ router.get('/analytics', async (req, res) => {
       count: spec.count
     }));
 
-    // Get gender demographics
-    const genderStats = await Patient.aggregate([
-      {
-        $group: {
-          _id: '$gender',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    // Get age demographics
-    const patients = await Patient.find().select('dob');
+    // $dateDiff in years truncates toward zero like Math.floor for positive ages,
+    // so boundary 19 == "19+" maps the original age<=18 group, etc.
     const ageGroups = {
       '0-18': 0,
       '19-35': 0,
@@ -493,63 +574,41 @@ router.get('/analytics', async (req, res) => {
       '51-65': 0,
       '65+': 0
     };
-
-    patients.forEach(patient => {
-      if (patient.dob) {
-        const age = Math.floor((new Date() - new Date(patient.dob)) / (365.25 * 24 * 60 * 60 * 1000));
-        if (age <= 18) ageGroups['0-18']++;
-        else if (age <= 35) ageGroups['19-35']++;
-        else if (age <= 50) ageGroups['36-50']++;
-        else if (age <= 65) ageGroups['51-65']++;
-        else ageGroups['65+']++;
-      }
+    const bucketLabels = { 0: '0-18', 19: '19-35', 36: '36-50', 51: '51-65', '65+': '65+' };
+    ageBuckets.forEach(b => {
+      const label = bucketLabels[b._id];
+      if (label) ageGroups[label] += b.count;
     });
 
-    // Get monthly patient case statistics (last 12 months)
-    const monthlyData = [];
+    // Build the 12-month series oldest->newest, keyed off the grouped results
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyMap = {};
+    monthlyAgg.forEach(m => {
+      monthlyMap[`${m._id.year}-${m._id.month}`] = { cases: m.cases, appointments: m.appointments };
+    });
 
-    console.log('Fetching monthly statistics...');
-
+    const monthlyData = [];
+    const currentYear = new Date().getFullYear();
     for (let i = 11; i >= 0; i--) {
       const monthStart = new Date();
       monthStart.setMonth(monthStart.getMonth() - i);
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      const monthEnd = new Date(monthStart);
-      monthEnd.setMonth(monthEnd.getMonth() + 1);
-
-      const cases = await Appointment.countDocuments({
-        appointment_date: { $gte: monthStart, $lt: monthEnd },
-        status: 'completed'
-      });
-
-      const totalAppointments = await Appointment.countDocuments({
-        appointment_date: { $gte: monthStart, $lt: monthEnd }
-      });
-
       const year = monthStart.getFullYear();
-      const currentYear = new Date().getFullYear();
+      const monthIdx = monthStart.getMonth();
+      const entry = monthlyMap[`${year}-${monthIdx + 1}`] || { cases: 0, appointments: 0 };
 
-      // Show only month name for current year, include year for other years
       const monthLabel = year === currentYear
-        ? monthNames[monthStart.getMonth()]
-        : `${monthNames[monthStart.getMonth()]} '${String(year).slice(-2)}`;
+        ? monthNames[monthIdx]
+        : `${monthNames[monthIdx]} '${String(year).slice(-2)}`;
 
       monthlyData.push({
         month: monthLabel,
-        cases,
-        appointments: totalAppointments
+        cases: entry.cases,
+        appointments: entry.appointments
       });
-
-      if (cases > 0) {
-        console.log(`${monthLabel}: ${cases} completed cases, ${totalAppointments} total appointments`);
-      }
     }
-
-    console.log('Total months with data:', monthlyData.length);
-    console.log('Months with completed cases:', monthlyData.filter(m => m.cases > 0).length);
 
     res.json({
       success: true,

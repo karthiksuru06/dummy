@@ -6,12 +6,30 @@ const path = require('path');
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
 const Admin = require('../models/Admin');
+const RefreshToken = require('../models/RefreshToken');
 const { generateOTP, hashOTP, verifyOTP, sendOTPEmail, isOTPExpired } = require('../utils/otpService');
 
 const router = express.Router();
 
 // Configure multer for file uploads
 const crypto = require('crypto');
+
+const ACCESS_TOKEN_TTL = '15m';
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+const hashRefreshToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+// Mints a random refresh token, persists its hash, and returns the raw token.
+async function issueRefreshToken(userId, role) {
+  const token = crypto.randomBytes(40).toString('hex');
+  await RefreshToken.create({
+    user_id: userId,
+    role,
+    token_hash: hashRefreshToken(token),
+    expires_at: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+  });
+  return token;
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -164,12 +182,14 @@ router.post('/patients/login', async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: patient._id, role: 'patient' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: patient._id, role: 'patient' }, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+    const refreshToken = await issueRefreshToken(patient._id, 'patient');
 
     // Return token and patient data (excluding password)
     res.json({
       message: 'Login successful',
       token,
+      refreshToken,
       user: {
         _id: patient._id,
         full_name: patient.full_name,
@@ -233,12 +253,14 @@ router.post('/doctors/login', async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: doctor._id, role: 'doctor' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: doctor._id, role: 'doctor' }, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+    const refreshToken = await issueRefreshToken(doctor._id, 'doctor');
 
     // Return token and doctor data (excluding password)
     res.json({
       message: 'Login successful',
       token,
+      refreshToken,
       user: {
         _id: doctor._id,
         full_name: doctor.full_name,
@@ -282,12 +304,14 @@ router.post('/admin/login', async (req, res) => {
     const token = jwt.sign(
       { id: admin._id, role: 'admin', email: admin.email },
       process.env.JWT_SECRET,
-      { expiresIn: '8h' }
+      { expiresIn: ACCESS_TOKEN_TTL }
     );
+    const refreshToken = await issueRefreshToken(admin._id, 'admin');
 
     res.json({
       message: 'Admin login successful',
       token,
+      refreshToken,
       admin: {
         id: admin._id,
         email: admin.email,
@@ -548,6 +572,59 @@ router.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Server error: ' + error.message });
+  }
+});
+
+// Refresh Access Token (with rotation)
+router.post('/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+
+    const stored = await RefreshToken.findOne({
+      token_hash: hashRefreshToken(refreshToken),
+      revoked: false,
+      expires_at: { $gt: new Date() },
+    });
+
+    if (!stored) {
+      return res.status(401).json({ message: 'Invalid refresh token' });
+    }
+
+    // Rotate: revoke the presented token, issue a fresh one.
+    stored.revoked = true;
+    await stored.save();
+
+    const token = jwt.sign(
+      { id: stored.user_id, role: stored.role },
+      process.env.JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_TTL }
+    );
+    const newRefreshToken = await issueRefreshToken(stored.user_id, stored.role);
+
+    res.json({ message: 'Token refreshed', token, refreshToken: newRefreshToken });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Logout — revoke a refresh token (idempotent)
+router.post('/logout', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+      await RefreshToken.updateOne(
+        { token_hash: hashRefreshToken(refreshToken) },
+        { $set: { revoked: true } }
+      );
+    }
+    res.status(200).json({ message: 'Logged out' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

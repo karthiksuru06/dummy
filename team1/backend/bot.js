@@ -256,6 +256,10 @@ async function handleMessage(userId, message) {
   // ---------- Store user message ----------
   convo.history.push({ role: "user", content: message });
 
+  // Snapshot mutable state so a later validateInput rejection can fully roll back
+  const detailsSnapshot = { ...convo.extractedDetails };
+  const symptomHistorySnapshot = [...convo.symptomHistory];
+
   // ---------- Extract symptom details ----------
   const details = extractSymptomDetails(message);
   if (details.severity !== "Neutral") convo.extractedDetails.severity = details.severity;
@@ -329,6 +333,8 @@ async function handleMessage(userId, message) {
 
     if (!isValid) {
       if (convo.history.length > 0) convo.history.pop();
+      convo.extractedDetails = detailsSnapshot;
+      convo.symptomHistory = symptomHistorySnapshot;
       return makeRepeat();
     }
 

@@ -138,11 +138,14 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
 
     await prescription.save();
 
-    // Update appointment status to completed
+    // Update appointment status to completed — but only if it was actually
+    // scheduled/rescheduled. Never flip a 'pending' or 'cancelled' appointment
+    // to completed just because a prescription was attached.
     if (appointment_id) {
-      await Appointment.findByIdAndUpdate(appointment_id, {
-        status: 'completed'
-      });
+      await Appointment.findOneAndUpdate(
+        { _id: appointment_id, status: { $in: ['scheduled', 'rescheduled'] } },
+        { status: 'completed' }
+      );
 
       // Mark related tasks as completed
       await Task.updateMany(

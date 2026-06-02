@@ -429,7 +429,15 @@ async function validateInput(message) {
   if (heuristicIsMedical(message)) return true;
 
   const prompt = `You are a strict medical-input validator.
-...
+
+Decide whether the input describes a physical/medical symptom, health concern, or bodily condition.
+
+Answer with EXACTLY one word, lowercase, no punctuation:
+- "true"  → the input describes a physical/medical symptom, health concern, or bodily condition
+- "false" → the input is a greeting, nonsense, emotional-only, or unrelated chit-chat
+
+Do not explain. Output only "true" or "false".
+
 Input: "${sanitizeInput(message)}"`;
 
   try {

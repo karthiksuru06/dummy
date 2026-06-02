@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
@@ -131,6 +132,17 @@ router.post('/', async (req, res) => {
     }
     // admin may pass explicit ids.
 
+    // Boundary validation: a missing/invalid field should be a 400, not a
+    // Mongoose ValidationError that 500s.
+    const errors = [];
+    if (!doctor_id || !mongoose.isValidObjectId(doctor_id)) errors.push('doctor_id (valid id) is required');
+    if (!appointment_date || isNaN(new Date(appointment_date).getTime())) errors.push('appointment_date (valid date) is required');
+    if (!appointment_time || typeof appointment_time !== 'string' || !appointment_time.trim()) errors.push('appointment_time is required');
+    if (!service_type) errors.push('service_type is required');
+    if (errors.length) {
+      return res.status(400).json({ success: false, message: errors.join(', ') });
+    }
+
     // Check for conflicting appointments
     const existingAppointment = await Appointment.findOne({
       doctor_id,
@@ -250,6 +262,17 @@ router.post('/book', async (req, res) => {
       if (acct) patientName = `${acct.full_name || ''} ${acct.last_name || ''}`.trim();
     }
     // doctors/admins booking on behalf of a patient keep the supplied patientId.
+
+    // Boundary validation: a missing/invalid field should be a 400, not a
+    // Mongoose ValidationError that 500s.
+    const errors = [];
+    if (!doctorId || !mongoose.isValidObjectId(doctorId)) errors.push('doctorId (valid id) is required');
+    if (!date || isNaN(new Date(date).getTime())) errors.push('date (valid date) is required');
+    if (!time || typeof time !== 'string' || !time.trim()) errors.push('time is required');
+    if (!consultationType) errors.push('consultationType is required');
+    if (errors.length) {
+      return res.status(400).json({ success: false, message: errors.join(', ') });
+    }
 
     // Check for conflicting appointments
     const existingAppointment = await Appointment.findOne({
