@@ -140,7 +140,7 @@ function AdminLogin() {
           </form>
 
           <div className="admin-footer">
-            <p>Protected by MEDviz Security • <a href="#">Need Help?</a></p>
+            <p>Protected by MEDviz Security • <a href="mailto:support@medviz.tech">Need Help?</a></p>
           </div>
         </div>
       </div>

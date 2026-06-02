@@ -438,3 +438,9 @@
   .admin-medical-records .admin-filter-btn { align-self: flex-start; }
   .admin-medical-records .admin-records-table thead th { top: 12px; font-size: 0.72rem; }
 }
+.admin-table-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}

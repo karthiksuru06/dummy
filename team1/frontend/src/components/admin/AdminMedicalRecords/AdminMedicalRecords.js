@@ -131,7 +131,15 @@ const AdminMedicalRecords = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredRecords.map((record) => (
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="admin-table-empty">Loading medical records...</td>
+              </tr>
+            ) : filteredRecords.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="admin-table-empty">No medical records found</td>
+              </tr>
+            ) : filteredRecords.map((record) => (
               <tr key={record.id}>
                 <td className="admin-record-id">{record.id}</td>
                 <td>{record.doctorName}</td>
@@ -147,12 +155,13 @@ const AdminMedicalRecords = () => {
                     <button
                       className="admin-action-btn admin-view"
                       title="View"
+                      aria-label={`View prescription ${record.id}`}
                       onClick={() => handleView(record.id)}
                     >
-                      <FiEye />
+                      <FiEye aria-hidden="true" />
                     </button>
-                    <button className="admin-action-btn admin-delete" title="Delete" onClick={() => handleDelete(record.id)}>
-                      <FiTrash2 />
+                    <button className="admin-action-btn admin-delete" title="Delete" aria-label={`Delete prescription ${record.id}`} onClick={() => handleDelete(record.id)}>
+                      <FiTrash2 aria-hidden="true" />
                     </button>
                   </div>
                 </td>

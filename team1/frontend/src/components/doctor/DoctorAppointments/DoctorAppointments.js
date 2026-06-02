@@ -637,7 +637,7 @@ const DoctorAppointments = () => {
           <div className="doctor-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="doctor-modal-header">
               <h2>Create Meeting</h2>
-              <button className="doctor-modal-close" onClick={() => setShowMeetingModal(false)}>×</button>
+              <button className="doctor-modal-close" onClick={() => setShowMeetingModal(false)} aria-label="Close">×</button>
             </div>
             <form onSubmit={handleSubmitMeeting} className="doctor-meeting-form">
               <div className="doctor-form-group">
@@ -711,7 +711,7 @@ const DoctorAppointments = () => {
           <div className="doctor-modal-content doctor-prescription-modal" onClick={(e) => e.stopPropagation()}>
             <div className="doctor-modal-header">
               <h2>Create Prescription</h2>
-              <button className="doctor-modal-close" onClick={() => setShowPrescriptionModal(false)}>×</button>
+              <button className="doctor-modal-close" onClick={() => setShowPrescriptionModal(false)} aria-label="Close prescription form">×</button>
             </div>
             <form onSubmit={handleSubmitPrescription} className="doctor-prescription-form">
               <div className="doctor-form-row">
@@ -807,8 +807,9 @@ const DoctorAppointments = () => {
                         type="button"
                         className="doctor-remove-medicine-btn"
                         onClick={() => removeMedicine(index)}
+                        aria-label={`Remove medicine ${index + 1}`}
                       >
-                        <FaTrash />
+                        <FaTrash aria-hidden="true" />
                       </button>
                     )}
                   </div>

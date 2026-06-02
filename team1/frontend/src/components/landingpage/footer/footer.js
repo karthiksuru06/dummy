@@ -40,9 +40,9 @@ export default function Footer() {
           <h3>MEDviz</h3>
           <p>The next generation of medical visualization and patient care. Simple, fast, and reliable solutions built for practitioners.</p>
           <div className="social-icons">
-            <a href="#" className="social-icon"><FaTwitter /></a>
-            <a href="#" className="social-icon"><FaGithub /></a>
-            <a href="#" className="social-icon"><FaInstagram /></a>
+            <a href="https://twitter.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on Twitter"><FaTwitter aria-hidden="true" /></a>
+            <a href="https://github.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on GitHub"><FaGithub aria-hidden="true" /></a>
+            <a href="https://instagram.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on Instagram"><FaInstagram aria-hidden="true" /></a>
           </div>
         </motion.div>
 
@@ -74,7 +74,7 @@ export default function Footer() {
           <ul>
             {["Security", "Privacy", "Status", "Documentation"].map((item) => (
               <li key={item}>
-                <a href="#">{item}</a>
+                <a href="#contact">{item}</a>
               </li>
             ))}
           </ul>

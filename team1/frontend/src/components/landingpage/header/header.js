@@ -42,8 +42,13 @@ const Header = () => {
             </Link>
           </nav>
         </div>
-        <button className="mobile-toggle" onClick={toggleMobileNav}>
-          <span className={`hamburger ${isMobileNavOpen ? 'open' : ''}`}></span>
+        <button
+          className="mobile-toggle"
+          onClick={toggleMobileNav}
+          aria-label={isMobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileNavOpen}
+        >
+          <span className={`hamburger ${isMobileNavOpen ? 'open' : ''}`} aria-hidden="true"></span>
         </button>
       </div>
     </motion.header>

@@ -40,8 +40,10 @@ const AdminLayout = () => {
           <button
             className="admin-menu-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-expanded={sidebarOpen}
           >
-            {sidebarOpen ? <FiX /> : <FiMenu />}
+            {sidebarOpen ? <FiX aria-hidden="true" /> : <FiMenu aria-hidden="true" />}
           </button>
           <h1 className="admin-logo">MEDviz Admin</h1>
         </div>
@@ -62,7 +64,7 @@ const AdminLayout = () => {
                   isActive ? 'admin-nav-link active' : 'admin-nav-link'
                 }
               >
-                <span className="admin-nav-icon">{item.icon}</span>
+                <span className="admin-nav-icon" aria-hidden="true">{item.icon}</span>
                 <span
                   className="admin-nav-label"
                   style={{ display: 'inline-block', opacity: 1, visibility: 'visible', fontSize: '0.95rem', color: 'inherit' }}

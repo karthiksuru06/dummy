@@ -95,12 +95,26 @@ const DoctorNavbar = () => {
 
         {/* 👤 Right Actions */}
         <div className="dr-nav-actions">
-          <div className="dr-nav-icon-btn dr-bell-active" onClick={() => navigate('/doctor/notifications')}>
-            <FaBell />
+          <div
+            className="dr-nav-icon-btn dr-bell-active"
+            onClick={() => navigate('/doctor/notifications')}
+            role="button"
+            tabIndex={0}
+            aria-label={notificationCount > 0 ? `Notifications, ${notificationCount} unread` : 'Notifications'}
+          >
+            <FaBell aria-hidden="true" />
             {notificationCount > 0 && <span className="dr-nav-badge">{notificationCount}</span>}
           </div>
 
-          <div className="dr-nav-profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
+          <div
+            className="dr-nav-profile-trigger"
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            role="button"
+            tabIndex={0}
+            aria-haspopup="menu"
+            aria-expanded={isProfileOpen}
+            aria-label="Open profile menu"
+          >
             <div className="dr-nav-avatar">
               {doctorData.profilePic ? (
                 <img src={doctorData.profilePic} alt="Profile" />
@@ -138,8 +152,13 @@ const DoctorNavbar = () => {
           </div>
 
           {/* 🍔 Hamburger */}
-          <button className="dr-hamburger" onClick={toggleMobileMenu}>
-            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+          <button
+            className="dr-hamburger"
+            onClick={toggleMobileMenu}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
           </button>
         </div>
       </div>

@@ -90,8 +90,9 @@ function Login(){
 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="input-group">
-              <label>Email Address</label>
+              <label htmlFor="login-email">Email Address</label>
               <input
+                id="login-email"
                 type="email"
                 name="email"
                 placeholder="Enter your email"
@@ -101,8 +102,9 @@ function Login(){
             </div>
 
             <div className="input-group">
-              <label>Password</label>
+              <label htmlFor="login-password">Password</label>
               <input
+                id="login-password"
                 type="password"
                 name="password"
                 placeholder="Enter your password"
