@@ -158,9 +158,20 @@ const MyAppointments = () => {
     }
   };
 
-  const handleViewReport = (appointment) => {
-    setSelectedPrescription(appointment);
+  const handleViewReport = async (appointment) => {
+    // The appointments API does not embed the prescription, so the modal used
+    // to always show "No Prescription Available". Fetch it on open.
     setShowPrescriptionModal(true);
+    setSelectedPrescription({ ...appointment, prescription: null });
+    try {
+      const res = await API.get(`/prescriptions/appointment/${appointment._id || appointment.id}`);
+      if (res.data && res.data.prescription) {
+        setSelectedPrescription({ ...appointment, prescription: res.data.prescription });
+      }
+    } catch (err) {
+      // 404 = no prescription for this appointment; leave prescription null so
+      // the "No Prescription Available" branch renders.
+    }
   };
 
   const closePrescriptionModal = () => {
@@ -427,7 +438,7 @@ const MyAppointments = () => {
                             <div key={index} className="medicine-item">
                               <div className="medicine-header">
                                 <span className="medicine-number">{index + 1}</span>
-                                <span className="medicine-name">{medicine.name}</span>
+                                <span className="medicine-name">{medicine.medicine_name}</span>
                               </div>
                               <div className="medicine-details">
                                 <div className="detail-row">
@@ -435,17 +446,13 @@ const MyAppointments = () => {
                                   <span className="detail-value">{medicine.dosage}</span>
                                 </div>
                                 <div className="detail-row">
-                                  <span className="detail-label">Frequency:</span>
-                                  <span className="detail-value">{medicine.frequency}</span>
-                                </div>
-                                <div className="detail-row">
                                   <span className="detail-label">Duration:</span>
                                   <span className="detail-value">{medicine.duration}</span>
                                 </div>
-                                {medicine.instructions && (
+                                {medicine.notes && (
                                   <div className="detail-row">
-                                    <span className="detail-label">Instructions:</span>
-                                    <span className="detail-value">{medicine.instructions}</span>
+                                    <span className="detail-label">Notes:</span>
+                                    <span className="detail-value">{medicine.notes}</span>
                                   </div>
                                 )}
                               </div>

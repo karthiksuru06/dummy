@@ -97,6 +97,19 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
       }
     }
 
+    // One prescription per appointment. The doctor UI can't reliably tell
+    // whether a prescription already exists (hasPrescription was hardcoded
+    // false), so enforce it here to prevent duplicates.
+    if (appointment_id) {
+      const existing = await Prescription.findOne({ appointment_id });
+      if (existing) {
+        return res.status(409).json({
+          success: false,
+          message: 'A prescription already exists for this appointment'
+        });
+      }
+    }
+
     const prescription = new Prescription({
       appointment_id,
       patient_id: finalPatientId,

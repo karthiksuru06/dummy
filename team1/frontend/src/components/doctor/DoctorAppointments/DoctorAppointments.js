@@ -179,6 +179,16 @@ const DoctorAppointments = () => {
       const newTime = prompt('Enter new time (e.g., 10:00 AM):');
 
       if (newDate && newTime) {
+        // Validate formats before sending — a malformed date/time was stored
+        // verbatim and then broke the alert/auto-complete jobs that parse it.
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate.trim()) || isNaN(Date.parse(newDate.trim()))) {
+          alert('Please enter a valid date in YYYY-MM-DD format.');
+          return;
+        }
+        if (!/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(newTime.trim())) {
+          alert('Please enter a valid time like "10:00 AM".');
+          return;
+        }
         await doctorService.rescheduleAppointment(appointment.id, {
           new_date: newDate,
           new_time: newTime
@@ -285,7 +295,9 @@ const DoctorAppointments = () => {
       }
     } catch (error) {
       console.error('Error saving prescription:', error.message);
-      alert('Failed to save prescription');
+      // Surface the server message (e.g. "A prescription already exists for
+      // this appointment") instead of a generic failure.
+      alert(error.response?.data?.message || 'Failed to save prescription');
     }
   };
 
