@@ -5,6 +5,38 @@ const Notification = require('../models/Notification');
 const Task = require('../models/Task');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
+const { requireRole } = require('../middleware/auth');
+const { validateObjectIdParam } = require('../middleware/validate');
+
+// ---- Ownership guards (router is already authenticated in server.js) ----
+// Loads the appointment so guards/handlers can check the real owner, not a
+// client-supplied id. 404 if it doesn't exist.
+async function loadAppointment(req, res, next) {
+  try {
+    const appt = await Appointment.findById(req.params.id);
+    if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+    req.appointment = appt;
+    next();
+  } catch (err) { next(err); }
+}
+// Only the appointment's doctor (or an admin) may act.
+function apptDoctorOrAdmin(req, res, next) {
+  if (req.user.role === 'admin') return next();
+  if (req.user.role === 'doctor' && String(req.appointment.doctor_id) === req.user.id) return next();
+  return res.status(403).json({ message: 'Forbidden: not your appointment' });
+}
+// Either party (patient or doctor) on the appointment, or an admin.
+function apptParticipantOrAdmin(req, res, next) {
+  if (req.user.role === 'admin') return next();
+  if (String(req.appointment.patient_id) === req.user.id || String(req.appointment.doctor_id) === req.user.id) return next();
+  return res.status(403).json({ message: 'Forbidden: not your appointment' });
+}
+// A doctor may only read their own lists (admins any).
+function doctorParamSelfOrAdmin(req, res, next) {
+  if (req.user.role === 'admin') return next();
+  if (req.user.role === 'doctor' && req.user.id === String(req.params.doctorId)) return next();
+  return res.status(403).json({ message: 'Forbidden' });
+}
 
 // Helper function to parse appointment time string
 const parseAppointmentTime = (timeString) => {
@@ -308,7 +340,7 @@ router.post('/book', async (req, res) => {
 });
 
 // Get upcoming appointments for a doctor
-router.get('/upcoming/:doctorId', async (req, res) => {
+router.get('/upcoming/:doctorId', doctorParamSelfOrAdmin, async (req, res) => {
   try {
     const { doctorId } = req.params;
     const currentDate = new Date();
@@ -340,7 +372,7 @@ router.get('/upcoming/:doctorId', async (req, res) => {
 });
 
 // Get all appointments for a doctor
-router.get('/doctor/:doctorId', async (req, res) => {
+router.get('/doctor/:doctorId', doctorParamSelfOrAdmin, async (req, res) => {
   try {
     const { doctorId } = req.params;
     const { status } = req.query; // Optional filter by status
@@ -372,7 +404,7 @@ router.get('/doctor/:doctorId', async (req, res) => {
 });
 
 // Approve an appointment
-router.post('/:id/approve', async (req, res) => {
+router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDoctorOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { meeting_link, meeting_notes } = req.body;
@@ -483,7 +515,7 @@ router.post('/:id/approve', async (req, res) => {
 });
 
 // Reject an appointment
-router.post('/:id/reject', async (req, res) => {
+router.post('/:id/reject', validateObjectIdParam('id'), loadAppointment, apptDoctorOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { rejection_reason } = req.body;
@@ -552,7 +584,7 @@ router.post('/:id/reject', async (req, res) => {
 });
 
 // Reschedule an appointment
-router.put('/:id/reschedule', async (req, res) => {
+router.put('/:id/reschedule', validateObjectIdParam('id'), loadAppointment, apptParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { new_date, new_time, reschedule_reason } = req.body;
@@ -616,7 +648,7 @@ router.put('/:id/reschedule', async (req, res) => {
 });
 
 // Cancel an appointment
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateObjectIdParam('id'), loadAppointment, apptParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { cancellation_reason } = req.body;
@@ -673,7 +705,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get appointment by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), loadAppointment, apptParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -5,9 +5,44 @@ const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
 const Patient = require('../models/Patient');
 const Task = require('../models/Task');
+const { requireRole } = require('../middleware/auth');
+const { validateObjectIdParam } = require('../middleware/validate');
+
+// ---- Ownership guards (router is authenticated in server.js) ----
+async function loadPrescription(req, res, next) {
+  try {
+    const rx = await Prescription.findById(req.params.id);
+    if (!rx) return res.status(404).json({ message: 'Prescription not found' });
+    req.prescription = rx;
+    next();
+  } catch (err) { next(err); }
+}
+// The prescription's patient, its prescribing doctor, or an admin.
+function rxParticipantOrAdmin(req, res, next) {
+  if (req.user.role === 'admin') return next();
+  const uid = req.user.id;
+  if (String(req.prescription.patient_id) === uid || String(req.prescription.doctor_id) === uid) return next();
+  return res.status(403).json({ message: 'Forbidden: not your prescription' });
+}
+// A patient may only read their own prescriptions by patientId (doctors/admins any).
+function patientParamSelfOrStaff(req, res, next) {
+  if (req.user.role === 'doctor' || req.user.role === 'admin') return next();
+  if (req.user.id === String(req.params.patientId)) return next();
+  return res.status(403).json({ message: 'Forbidden' });
+}
+// Participant on the underlying appointment, or staff.
+async function apptParamParticipantOrAdmin(req, res, next) {
+  try {
+    if (req.user.role === 'admin') return next();
+    const appt = await Appointment.findById(req.params.appointmentId);
+    if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+    if (String(appt.patient_id) === req.user.id || String(appt.doctor_id) === req.user.id) return next();
+    return res.status(403).json({ message: 'Forbidden' });
+  } catch (err) { next(err); }
+}
 
 // Create a new prescription
-router.post('/', async (req, res) => {
+router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
   try {
     const {
       appointment_id,
@@ -120,7 +155,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get prescription by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -150,7 +185,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get prescriptions for a patient
-router.get('/patient/:patientId', async (req, res) => {
+router.get('/patient/:patientId', validateObjectIdParam('patientId'), patientParamSelfOrStaff, async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -173,7 +208,7 @@ router.get('/patient/:patientId', async (req, res) => {
 });
 
 // Get prescriptions for an appointment
-router.get('/appointment/:appointmentId', async (req, res) => {
+router.get('/appointment/:appointmentId', validateObjectIdParam('appointmentId'), apptParamParticipantOrAdmin, async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
@@ -203,7 +238,7 @@ router.get('/appointment/:appointmentId', async (req, res) => {
 });
 
 // Download prescription as PDF (placeholder - returns JSON for now)
-router.get('/:id/download', async (req, res) => {
+router.get('/:id/download', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
