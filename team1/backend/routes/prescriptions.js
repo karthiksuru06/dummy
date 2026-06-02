@@ -129,31 +129,27 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
       );
     }
 
-    // Create notification for patient only
-    const notification = new Notification({
-      doctor_id,
-      patient_id: finalPatientId,
-      patient_name,
-      prescription_id: prescription._id,
-      appointment_id,
-      message: `Your prescription is ready. Diagnosis: ${diagnosis}`,
-      type: 'prescription',
-      status: 'pending'
-    });
-    await notification.save();
-
-    // Create alert notification for patient
-    const alertNotification = new Notification({
-      doctor_id,
-      patient_id: finalPatientId,
-      patient_name,
-      prescription_id: prescription._id,
-      appointment_id,
-      message: `💊 New Prescription Available! Your doctor has added a prescription. Diagnosis: ${diagnosis}`,
-      type: 'alert',
-      status: 'pending'
-    });
-    await alertNotification.save();
+    // Notify the patient. receiver_id/receiver_type are REQUIRED by the
+    // Notification schema — omitting them (the old code) threw a ValidationError
+    // that 500'd the request even though the prescription was already saved, and
+    // the patient never got notified. Best-effort: never fail the request on a
+    // notification error.
+    try {
+      await new Notification({
+        receiver_id: finalPatientId,
+        receiver_type: 'Patient',
+        doctor_id,
+        patient_id: finalPatientId,
+        patient_name,
+        prescription_id: prescription._id,
+        appointment_id,
+        message: `Your prescription is ready. Diagnosis: ${diagnosis}`,
+        type: 'prescription',
+        status: 'pending'
+      }).save();
+    } catch (notifyErr) {
+      console.error('Prescription notification failed (non-fatal):', notifyErr.message);
+    }
 
     res.status(201).json({
       success: true,

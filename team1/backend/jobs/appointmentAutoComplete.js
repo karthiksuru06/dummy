@@ -30,9 +30,10 @@ const autoCompleteOldAppointments = async () => {
 
     console.log(`[${new Date().toISOString()}] Running auto-complete job for appointments...`);
 
-    // Find all scheduled appointments and check them in JavaScript
+    // Find scheduled OR rescheduled appointments — 'rescheduled' is a distinct
+    // status and was previously never auto-completed, so those lingered forever.
     const scheduledAppointments = await Appointment.find({
-      status: 'scheduled'
+      status: { $in: ['scheduled', 'rescheduled'] }
     });
 
     if (scheduledAppointments.length === 0) {

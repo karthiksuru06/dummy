@@ -74,7 +74,9 @@ const sendAppointmentAlerts = async () => {
           if (!existing24HourAlert) {
             // Send alert to patient only
             const patientAlert = new Notification({
-              doctor_id: appointment.doctor_id,
+              receiver_id: appointment.patient_id,
+              receiver_type: 'Patient',
+              doctor_id: appointment.doctor_id && appointment.doctor_id._id ? appointment.doctor_id._id : appointment.doctor_id,
               patient_id: appointment.patient_id,
               patient_name: appointment.patient_name,
               appointment_id: appointment._id,
@@ -101,7 +103,9 @@ const sendAppointmentAlerts = async () => {
           if (!existing1HourAlert) {
             // Send alert to patient only
             const patientAlert = new Notification({
-              doctor_id: appointment.doctor_id,
+              receiver_id: appointment.patient_id,
+              receiver_type: 'Patient',
+              doctor_id: appointment.doctor_id && appointment.doctor_id._id ? appointment.doctor_id._id : appointment.doctor_id,
               patient_id: appointment.patient_id,
               patient_name: appointment.patient_name,
               appointment_id: appointment._id,
@@ -116,9 +120,12 @@ const sendAppointmentAlerts = async () => {
           }
         }
 
-        // Check if we need to send 15-minute alert (between 10 and 20 minutes before)
+        // "Starting soon" alert. The window MUST be >= the run interval or it
+        // gets skipped between runs (the old 10-20min window is only 10min wide
+        // against a 30min interval, so it almost never fired). Fire once in the
+        // final ~30 minutes; dedup below prevents repeats.
         const minutesUntilAppointment = timeUntilAppointment / (1000 * 60);
-        if (minutesUntilAppointment >= 10 && minutesUntilAppointment <= 20) {
+        if (minutesUntilAppointment > 0 && minutesUntilAppointment <= 30 && hoursUntilAppointment < 0.5) {
           // Check if 15-minute alert already sent
           const existing15MinAlert = await Notification.findOne({
             appointment_id: appointment._id,
@@ -129,7 +136,9 @@ const sendAppointmentAlerts = async () => {
           if (!existing15MinAlert) {
             // Send alert to patient only
             const patientAlert = new Notification({
-              doctor_id: appointment.doctor_id,
+              receiver_id: appointment.patient_id,
+              receiver_type: 'Patient',
+              doctor_id: appointment.doctor_id && appointment.doctor_id._id ? appointment.doctor_id._id : appointment.doctor_id,
               patient_id: appointment.patient_id,
               patient_name: appointment.patient_name,
               appointment_id: appointment._id,

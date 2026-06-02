@@ -64,10 +64,11 @@ const autoCompleteOldAppointments = async (doctorId) => {
     const now = new Date();
     const sixHoursAgo = new Date(now.getTime() - (6 * 60 * 60 * 1000));
 
-    // Find all scheduled appointments for this doctor
+    // Find scheduled/rescheduled appointments for this doctor (rescheduled was
+    // previously skipped, so those never auto-completed).
     const scheduledAppointments = await Appointment.find({
       doctor_id: doctorId,
-      status: 'scheduled'
+      status: { $in: ['scheduled', 'rescheduled'] }
     });
 
     // Filter appointments that are more than 6 hours old
@@ -272,7 +273,10 @@ router.post('/book', async (req, res) => {
       appointment_date: date,
       appointment_time: time,
       reason: reason || symptoms || 'General Consultation',
-      status: status || 'pending',
+      // Never trust a client-supplied status: passing 'completed'/'cancelled'
+      // would dodge the conflict check + partial unique index and double-book a
+      // slot. New bookings are always 'pending'.
+      status: 'pending',
       meeting_notes: notes || ''
     });
 
@@ -362,7 +366,10 @@ router.post('/book', async (req, res) => {
 router.get('/upcoming/:doctorId', doctorParamSelfOrAdmin, async (req, res) => {
   try {
     const { doctorId } = req.params;
+    // appointment_date is stored at midnight; comparing against `now` (with the
+    // current time) excluded today's later appointments. Anchor to start-of-day.
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
     // Auto-complete appointments that are 6+ hours past scheduled time
     await autoCompleteOldAppointments(doctorId);
@@ -437,8 +444,11 @@ router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDo
     }
 
     appointment.status = 'scheduled';
-    appointment.meeting_link = meeting_link;
-    appointment.meeting_notes = meeting_notes;
+    // Only overwrite when the doctor actually supplied a value — assigning the
+    // bare body field set these to undefined (wiping any existing link/notes)
+    // whenever approve was called without them.
+    if (meeting_link !== undefined) appointment.meeting_link = meeting_link;
+    if (meeting_notes !== undefined) appointment.meeting_notes = meeting_notes;
     await appointment.save();
 
     // Get doctor information for the patient task

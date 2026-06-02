@@ -34,10 +34,11 @@ const autoCompleteOldAppointments = async (patientId) => {
     const now = new Date();
     const sixHoursAgo = new Date(now.getTime() - (6 * 60 * 60 * 1000));
 
-    // Find all scheduled appointments for this patient
+    // Find scheduled/rescheduled appointments for this patient (rescheduled was
+    // previously skipped, so those never auto-completed).
     const scheduledAppointments = await Appointment.find({
       patient_id: patientId,
-      status: 'scheduled'
+      status: { $in: ['scheduled', 'rescheduled'] }
     });
 
     // Filter appointments that are more than 6 hours old
