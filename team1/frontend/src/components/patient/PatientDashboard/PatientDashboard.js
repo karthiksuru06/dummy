@@ -125,7 +125,7 @@ const PatientDashboard = () => {
           
           {/* 📅 Upcoming Appointments */}
           <div className="dashboard-card appointments-card-new">
-            <h2 className="dashboard-card-title">✨ Upcoming Appointments</h2>
+            <h2 className="dashboard-card-title">Upcoming Appointments</h2>
             <div className="appointments-list-new">
               {loading ? (
                 <p style={{ textAlign: 'center', opacity: 0.6, padding: '20px' }}>Loading schedules...</p>
@@ -210,7 +210,7 @@ const PatientDashboard = () => {
 
           {/* 👩‍⚕️ Recommended Doctors */}
           <div className="dashboard-card doctors-card-bottom">
-            <h2 className="dashboard-card-title">🔍 Recommended Doctors</h2>
+            <h2 className="dashboard-card-title">Recommended Doctors</h2>
             <div className="doctors-grid-horizontal">
               {loading ? (
                 <p style={{ textAlign: 'center', opacity: 0.6 }}>Curating list...</p>
