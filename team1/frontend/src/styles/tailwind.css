@@ -40,3 +40,18 @@
     radial-gradient(50% 50% at 12% 0%, rgba(15, 181, 166, 0.18) 0%, transparent 55%),
     radial-gradient(55% 55% at 95% 100%, rgba(44, 107, 170, 0.22) 0%, transparent 55%);
 }
+
+/* ============================================================
+   PRODUCT-WIDE THEME — imported last so it unifies typography
+   across every portal (patient / doctor / admin / auth / landing).
+   One body font everywhere; editorial display serif for page titles.
+   ============================================================ */
+body {
+  font-family: var(--font-body);
+}
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+

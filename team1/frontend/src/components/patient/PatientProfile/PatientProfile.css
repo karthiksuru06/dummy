@@ -1,15 +1,15 @@
 /* MEDviz Patient Profile styles */
 :root {
   --bg-color: #F8FAFC;
-  --primary-color: #1E3A8A;
-  --accent-color: #14B8A6;
+  --primary-color: #0B264C;
+  --accent-color: #0FB5A6;
   --text-dark: #1F2937;
   --text-muted: #6B7280;
   --card-radius: 16px;
   --spacing: 8px;
   --shadow-soft: 0 4px 12px rgba(0,0,0,0.08);
   --transition: 0.3s ease;
-  --font-family: 'Inter', sans-serif;
+  --font-family: var(--font-body);
 }
 
 .profile-container {

@@ -8,14 +8,14 @@
   --glass-border: 1px solid rgba(255, 255, 255, 0.3);
   --premium-shadow: 0 8px 32px rgba(11, 38, 76, 0.08);
   --premium-blur: blur(12px);
-  --premium-gradient: linear-gradient(135deg, #0B264C 0%, #1e3a8a 100%);
-  --accent-teal: #00A8CC;
+  --premium-gradient: linear-gradient(135deg, #0B264C 0%, #0B264C 100%);
+  --accent-teal: #0FB5A6;
 }
 
 /* 🏔️ Global Refinements for Patient Flow */
 .patient-chatbot-page, .find-doctor-page, .notifications-page, .profile-container {
   background: radial-gradient(circle at top right, #f0f4f8 0%, #ffffff 100%) !important;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ✨ Glassmorphism Base for Cards */

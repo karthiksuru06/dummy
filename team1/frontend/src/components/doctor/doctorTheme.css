@@ -1,12 +1,12 @@
 /* Doctor Dashboard - Premium Medical Command Theme */
 :root {
   /* 🎨 Primary Palette - Deep Professional Blues & Emerald Accents */
-  --dr-primary: #6366f1;          /* Modern Indigo */
+  --dr-primary: #2C5F9F;          /* Modern Indigo */
   --dr-primary-dark: #4f46e5;
   --dr-primary-light: #818cf8;
   
   --dr-secondary: #0f172a;       /* Deep Slate */
-  --dr-accent: #10b981;         /* Emerald Green (Success/Health) */
+  --dr-accent: #0FB5A6;         /* Emerald Green (Success/Health) */
   --dr-warning: #f59e0b;        /* Amber */
   --dr-danger: #ef4444;         /* Rose Red */
   
@@ -42,7 +42,7 @@
 
 /* Base resets for Doctor Portal */
 .doctor-portal-root {
-  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-body);
   background-color: var(--dr-bg-canvas);
   color: var(--dr-text-main);
   min-height: 100vh;

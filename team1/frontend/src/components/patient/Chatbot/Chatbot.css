@@ -1,7 +1,7 @@
 /* ============================================================
    MEDviz Chatbot – Premium Healthcare UI
    Palette:
-     Primary teal  : #00A8CC
+     Primary teal  : #0FB5A6
      Navy deep     : #0B264C
      Surface white : #FFFFFF
      Background    : #F4F7FB
@@ -201,7 +201,7 @@
 }
 
 .bot-avatar {
-  background: linear-gradient(135deg, #00A8CC 0%, #0B264C 100%);
+  background: linear-gradient(135deg, #0FB5A6 0%, #0B264C 100%);
 }
 
 .user-avatar {
@@ -241,7 +241,7 @@
 }
 
 .user-bubble {
-  background: linear-gradient(135deg, #00A8CC 0%, #007BA8 100%);
+  background: linear-gradient(135deg, #0FB5A6 0%, #007BA8 100%);
   color: #ffffff;
   border-radius: 14px 4px 14px 14px;
   box-shadow: 0 2px 8px rgba(0, 168, 204, 0.28);
@@ -371,7 +371,7 @@
 }
 
 .action-btn-primary {
-  background: linear-gradient(135deg, #00A8CC 0%, #0077A8 100%);
+  background: linear-gradient(135deg, #0FB5A6 0%, #0077A8 100%);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 168, 204, 0.28);
 }
@@ -415,7 +415,7 @@
 .typing-indicator span {
   width: 7px;
   height: 7px;
-  background: #00A8CC;
+  background: #0FB5A6;
   border-radius: 50%;
   animation: bounce-dot 1.3s ease-in-out infinite;
 }
@@ -494,7 +494,7 @@
 }
 
 .chatbot-textarea:focus {
-  border-color: #00A8CC;
+  border-color: #0FB5A6;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.12);
 }
@@ -511,7 +511,7 @@
 
 /* ── Send button ──────────────────────────────────────────── */
 .chatbot-send-btn {
-  background: linear-gradient(135deg, #00A8CC 0%, #0077A8 100%);
+  background: linear-gradient(135deg, #0FB5A6 0%, #0077A8 100%);
   color: #ffffff;
   border: none;
   padding: 11px 20px;
@@ -619,7 +619,7 @@
 }
 
 .new-chat-btn-large {
-  background: linear-gradient(135deg, #00A8CC 0%, #0077A8 100%);
+  background: linear-gradient(135deg, #0FB5A6 0%, #0077A8 100%);
   color: #ffffff;
   border: none;
   padding: 12px 28px;

@@ -5,7 +5,7 @@
   --admin-primary-dark: #1E4270;      /* Darker Blue */
   --admin-primary-light: #E0E9F8;     /* Very Light Blue */
   
-  --admin-secondary: #0A4B66;        /* Deep Slate/Teal */
+  --admin-secondary: #0B264C;        /* Deep Slate/Teal */
   --admin-accent: #10b981;          /* Emerald Green (Success) */
   --admin-warning: #f59e0b;         /* Amber */
   --admin-danger: #ef4444;          /* Rose Red */
@@ -43,7 +43,7 @@
 
 /* 🏔️ Global Reset for Admin Portal */
 .admin-layout.premium-theme {
-  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-body);
   background-color: var(--admin-bg-canvas);
   color: var(--admin-text-main);
 }
@@ -58,7 +58,7 @@
 }
 
 .admin-layout.premium-theme .admin-logo {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   font-weight: 800;
   letter-spacing: -0.02em;
   background: linear-gradient(to right, #fff, #94a3b8);
@@ -140,7 +140,7 @@
 }
 
 .premium-theme .admin-page-header h1 {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   font-weight: 800;
   color: var(--admin-secondary) !important;
   letter-spacing: -0.01em;
@@ -190,7 +190,7 @@
 
 .premium-theme .admin-metric-value {
   color: var(--admin-secondary) !important;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   font-size: 2.5rem !important;
   font-weight: 800 !important;
 }

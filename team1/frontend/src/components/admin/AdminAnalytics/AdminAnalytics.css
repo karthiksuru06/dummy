@@ -26,7 +26,7 @@
 }
 
 .admin-card-header h2 {
-  color: #05294b;
+  color: #0B264C;
   font-size: 1.2rem;
   font-weight: 700;
   display: flex;
@@ -113,7 +113,7 @@
 .admin-monthly-bar {
   width: 100%;
   max-width: 50px;
-  background: linear-gradient(180deg, #05294b 0%, #073a68 100%);
+  background: linear-gradient(180deg, #0B264C 0%, #0B264C 100%);
   border-radius: 8px 8px 0 0;
   position: relative;
   transition: all 0.3s ease;
@@ -125,7 +125,7 @@
 }
 
 .admin-monthly-bar:hover {
-  background: linear-gradient(180deg, #073a68 0%, #0a4d8a 100%);
+  background: linear-gradient(180deg, #0B264C 0%, #0a4d8a 100%);
   transform: scaleY(1.05);
   box-shadow: 0 4px 12px rgba(5, 41, 75, 0.3);
 }
@@ -154,7 +154,7 @@
 }
 
 .admin-monthly-label {
-  color: #05294b;
+  color: #0B264C;
   font-size: 0.8rem;
   font-weight: 700;
   text-align: center;
@@ -189,7 +189,7 @@
 
 .admin-loader {
   border: 4px solid #f3f4f6;
-  border-top: 4px solid #05294b;
+  border-top: 4px solid #0B264C;
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -244,7 +244,7 @@
 }
 
 .admin-no-data-state h3 {
-  color: #05294b;
+  color: #0B264C;
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 8px 0;
@@ -321,7 +321,7 @@
 .admin-pie-center-text {
   font-size: 28px;
   font-weight: 700;
-  fill: #05294b;
+  fill: #0B264C;
 }
 
 .admin-pie-center-subtext {
@@ -362,7 +362,7 @@
 
 .admin-legend-label {
   flex: 1;
-  color: #05294b;
+  color: #0B264C;
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: capitalize;
@@ -378,7 +378,7 @@
 .admin-chart-tooltip {
   position: fixed;
   background: white;
-  border: 2px solid #05294b;
+  border: 2px solid #0B264C;
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -402,7 +402,7 @@
 .admin-tooltip-header {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #05294b;
+  color: #0B264C;
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 2px solid #e0e0e0;
@@ -429,7 +429,7 @@
 }
 
 .admin-tooltip-value {
-  color: #05294b;
+  color: #0B264C;
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -455,14 +455,14 @@
 }
 
 .admin-age-label {
-  color: #05294b;
+  color: #0B264C;
   font-weight: 600;
   font-size: 0.9rem;
 }
 
 .admin-age-count {
   color: white;
-  background: linear-gradient(135deg, #05294b 0%, #073a68 100%);
+  background: linear-gradient(135deg, #0B264C 0%, #0B264C 100%);
   padding: 4px 12px;
   border-radius: 12px;
   font-weight: 700;
@@ -498,7 +498,7 @@
 
 .admin-dept-name {
   width: 120px;
-  color: #05294b;
+  color: #0B264C;
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -507,7 +507,7 @@
   flex: 1;
   max-width: 500px;
   height: 35px;
-  background: linear-gradient(90deg, #05294b 0%, #073a68 100%);
+  background: linear-gradient(90deg, #0B264C 0%, #0B264C 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;

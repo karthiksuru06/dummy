@@ -22,7 +22,7 @@
 /* ================= LOGO ================= */
 
 .patient-logo {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: 0.5px;

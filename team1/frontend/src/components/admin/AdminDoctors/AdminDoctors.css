@@ -28,12 +28,12 @@
 }
 
 .admin-search-box:focus-within {
-  border-color: #05294b;
+  border-color: #0B264C;
   box-shadow: 0 0 0 3px rgba(5, 41, 75, 0.1);
 }
 
 .admin-search-box svg {
-  color: #05294b;
+  color: #0B264C;
   font-size: 1.2rem;
 }
 
@@ -50,14 +50,14 @@
   border: 2px solid #e0e0e0;
   border-radius: 12px;
   font-size: 1rem;
-  color: #05294b;
+  color: #0B264C;
   font-weight: 600;
   cursor: pointer;
   outline: none;
 }
 
 .admin-status-filter:focus {
-  border-color: #05294b;
+  border-color: #0B264C;
 }
 
 /* Specialization Section */
@@ -66,7 +66,7 @@
 }
 
 .admin-specialization-section h2 {
-  color: #05294b;
+  color: #0B264C;
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 20px;
@@ -109,7 +109,7 @@
 }
 
 .admin-spec-content h3 {
-  color: #05294b;
+  color: #0B264C;
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 4px 0;
@@ -132,7 +132,7 @@
 .admin-table-header {
   display: grid;
   grid-template-columns: 2fr 1.5fr 2fr 1fr 1.2fr 1.2fr 2fr;
-  background: linear-gradient(135deg, #05294b 0%, #073a68 100%);
+  background: linear-gradient(135deg, #0B264C 0%, #0B264C 100%);
   padding: 20px 24px;
   gap: 16px;
 }
@@ -215,7 +215,7 @@
 .admin-doctor-name-text {
   font-size: 1rem;
   font-weight: 700;
-  color: #05294b;
+  color: #0B264C;
 }
 
 .admin-doctor-id {
@@ -230,7 +230,7 @@
   align-items: center;
   gap: 8px;
   background: linear-gradient(135deg, #e6f2ff 0%, #d0e8ff 100%);
-  color: #05294b;
+  color: #0B264C;
   padding: 10px 16px;
   border-radius: 12px;
   font-weight: 600;
@@ -290,7 +290,7 @@
 .admin-exp-number {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #05294b;
+  color: #0B264C;
   line-height: 1;
 }
 

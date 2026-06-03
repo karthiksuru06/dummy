@@ -8,11 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Clinical brand blue — full scale for "perfect color codes".
+        // Clinical brand blue — anchored to the app's established brand
+        // (#2C5F9F primary, #0B264C navy, #E0E9F8 tint) so the WHOLE product
+        // shares one palette.
         brand: {
-          50: '#EEF5FB', 100: '#D9E8F6', 200: '#B6D2EC', 300: '#86B3DD',
-          400: '#5790CB', 500: '#2C6BAA', 600: '#235788', 700: '#1D496F',
-          800: '#16304a', 900: '#0A2540',
+          50: '#EEF4FB', 100: '#E0E9F8', 200: '#C2D6EE', 300: '#94B6DD',
+          400: '#5E8DC4', 500: '#3A6FAD', 600: '#2C5F9F', 700: '#234E82',
+          800: '#173A61', 900: '#0B264C',
         },
         // Vitality teal — the "alive/health" accent, used sparingly + boldly.
         teal: {

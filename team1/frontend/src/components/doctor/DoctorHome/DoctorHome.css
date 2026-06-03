@@ -9,7 +9,7 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
 }
 
 .dr-prestige-dashboard {
@@ -69,7 +69,7 @@
   padding: 1rem 1.5rem;
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  border-left: 4px solid #6366f1;
+  border-left: 4px solid #2C5F9F;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -137,7 +137,7 @@
 
 .dr-metric-pill:hover {
   transform: translateY(-5px);
-  border-color: #6366f1;
+  border-color: #2C5F9F;
   box-shadow: 0 12px 30px rgba(99, 102, 241, 0.08);
 }
 
@@ -226,7 +226,7 @@
 .head-btn {
   font-size: 0.75rem;
   font-weight: 800;
-  color: #6366f1;
+  color: #2C5F9F;
   background: #eef2ff;
   border: none;
   padding: 4px 10px;
@@ -383,7 +383,7 @@
   background: transparent;
   border: none;
   flex: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   line-height: 1.6;
   color: #451a03;

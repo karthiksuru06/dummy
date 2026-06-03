@@ -1,6 +1,6 @@
 /*
   DOCTOR DASHBOARD - COLOR ONLY OVERRIDE
-  Only changes colors to: #2C5F9F, #E0E9F8, #0A4B66
+  Only changes colors to: #2C5F9F, #E0E9F8, #0B264C
   Does NOT change layouts, sizes, or structure
 */
 
@@ -36,11 +36,11 @@ button[class*="approve"] svg,
 button[class*="save"] svg,
 .primary svg,
 [style*="background: #2C5F9F"] svg,
-[style*="background: #0A4B66"] svg,
-[style*="background: #1E4270"] svg,
+[style*="background: #0B264C"] svg,
+[style*="background: #234E82"] svg,
 [style*="background:#2C5F9F"] svg,
-[style*="background:#0A4B66"] svg,
-[style*="background:#1E4270"] svg {
+[style*="background:#0B264C"] svg,
+[style*="background:#234E82"] svg {
   color: white !important;
 }
 
@@ -50,7 +50,7 @@ button[class*="secondary"],
 .secondary {
   background-color: #E0E9F8 !important;
   border-color: #2C5F9F !important;
-  color: #0A4B66 !important;
+  color: #0B264C !important;
 }
 
 /* Replace generic borders with light blue */
@@ -83,14 +83,14 @@ button[class*="secondary"],
   color: #2C5F9F;
 }
 .doctor-portal a:hover {
-  color: #1E4270;
+  color: #234E82;
 }
 
 /* Replace badge/status colors (keep functional ones like success/danger) */
 .badge:not(.badge-success):not(.badge-danger):not(.badge-warning),
 .status:not([class*="success"]):not([class*="danger"]):not([class*="warning"]) {
   background-color: #E0E9F8 !important;
-  color: #0A4B66 !important;
+  color: #0B264C !important;
 }
 
 /* CRITICAL: Ensure white text and icons on ALL dark backgrounds */
@@ -142,8 +142,8 @@ button[class*="secondary"],
 
 /* Dark background buttons and containers */
 [class*="-btn"][style*="background"][style*="#2C5F9F"],
-[class*="-btn"][style*="background"][style*="#0A4B66"],
-[class*="-btn"][style*="background"][style*="#1E4270"],
+[class*="-btn"][style*="background"][style*="#0B264C"],
+[class*="-btn"][style*="background"][style*="#234E82"],
 .view-more-btn,
 .approve-btn,
 .save-btn,

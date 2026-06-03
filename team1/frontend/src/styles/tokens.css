@@ -51,9 +51,9 @@
   --color-text-soft: var(--c-ink-soft);
   --color-border: var(--c-line);
 
-  /* ---- Typography: ONE display + ONE body ---- */
+  /* ---- Typography: ONE display + ONE body, product-wide ---- */
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Fraunces', 'Plus Jakarta Sans', Georgia, serif;
 
   /* ---- Spacing: strict 4px grid (kills 0.15rem / 27px salad) ---- */
   --space-1: 4px;

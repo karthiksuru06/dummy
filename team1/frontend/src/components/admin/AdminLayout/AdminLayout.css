@@ -1,5 +1,5 @@
 /* =========================
-   Admin Layout - Deep Blue Theme (#05294b)
+   Admin Layout - Deep Blue Theme (#0B264C)
 ========================= */
 .admin-layout {
   display: flex;
@@ -15,7 +15,7 @@
   left: 0;
   right: 0;
   height: 70px;
-  background: linear-gradient(135deg, #05294b 0%, #011b32 100%);
+  background: linear-gradient(135deg, #0B264C 0%, #011b32 100%);
   box-shadow: 0 2px 10px rgba(5, 41, 75, 0.2);
   z-index: 900;
   display: flex;
@@ -176,9 +176,9 @@ a:active {
 /* Default Icon - Blue */
 .admin-sidebar .admin-nav-link .admin-nav-icon,
 .admin-sidebar .admin-nav-link .admin-nav-icon svg {
-  color: #05294b;
-  fill: #05294b;
-  stroke: #05294b;
+  color: #0B264C;
+  fill: #0B264C;
+  stroke: #0B264C;
   transition: 0.3s ease;
 }
 
@@ -192,13 +192,13 @@ a:active {
 /* Hover State */
 .admin-nav-link:hover {
   background: linear-gradient(90deg, #f8fbfd 0%, #93c3ee 100%) !important;
-  color: #05294b !important;
+  color: #0B264C !important;
   text-decoration: none !important;
 }
 
 /* Active State */
 .admin-nav-link.active {
-  background: linear-gradient(90deg,#05294b 0%,#073a68 100%) !important;
+  background: linear-gradient(90deg,#0B264C 0%,#0B264C 100%) !important;
   color: #ffffff !important;
   text-decoration: none !important;
   box-shadow: none !important;
@@ -219,7 +219,7 @@ a:active {
 /* Dark Button */
 .admin-my-button {
   padding: 10px 20px;
-  background: #05294b;
+  background: #0B264C;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -229,7 +229,7 @@ a:active {
 }
 
 .admin-my-button:hover {
-  background: #073a68;
+  background: #0B264C;
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(5, 41, 75, 0.3);
@@ -239,7 +239,7 @@ a:active {
 .admin-my-button-light {
   padding: 10px 20px;
   background: #e6f2ff;
-  color: #05294b;
+  color: #0B264C;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -249,7 +249,7 @@ a:active {
 
 .admin-my-button-light:hover {
   background: #cce6ff;
-  color: #05294b;
+  color: #0B264C;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(5, 41, 75, 0.2);
 }
@@ -282,7 +282,7 @@ a:active {
   justify-content: center;
   gap: 10px;
   padding: 12px;
-  background: #05294b;
+  background: #0B264C;
   color: white;
   border: none;
   border-radius: 10px;
@@ -293,7 +293,7 @@ a:active {
 }
 
 .admin-logout-btn:hover {
-  background: #073a68;
+  background: #0B264C;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(5, 41, 75, 0.3);
 }

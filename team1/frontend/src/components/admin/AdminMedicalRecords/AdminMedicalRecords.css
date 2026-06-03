@@ -8,7 +8,7 @@
 
 /* ---- Theme / root ---- */
 .admin-medical-records {
-  --navy: #05294b;
+  --navy: #0B264C;
   --navy-dark: #072d52;
   --accent-blue: #cfe6ff;
   --muted: #6b7280;
@@ -328,7 +328,7 @@
 .admin-modal-body .admin-info-card h3 {
   margin-top: 0;
   font-size: 1.3rem;
-  color: #05294b;
+  color: #0B264C;
   border-bottom: 3px solid #e0e0e0;
   padding-bottom: 8px;
   font-weight: 700;
@@ -417,7 +417,7 @@
 .admin-modal-body .admin-medicine-meta { display:flex; gap:20px; font-size:0.9rem; margin-top:4px; }
 .admin-modal-body .admin-medicine-notes { margin:4px 0 0 0; font-style:italic; color:#4a5568; }
 .admin-modal-footer { padding: 12px 18px; display:flex; gap:12px; justify-content:flex-end; border-top:1px solid #eef2f7; background:#fff; }
-.admin-print-btn { background:#05294b; color:#fff; padding:8px 12px; border-radius:8px; border:none; }
+.admin-print-btn { background:#0B264C; color:#fff; padding:8px 12px; border-radius:8px; border:none; }
 .admin-close-modal-btn { background:transparent; border:1px solid #e6eef5; padding:8px 12px; border-radius:8px; transition: background 0.3s, color 0.3s, border-color 0.3s; }
 .admin-close-modal-btn:hover { background: #fff; border-color: var(--navy); color: var(--navy); }
 

@@ -13,7 +13,7 @@
 }
 
 .doctor-profile-header h1 {
-  color: #0A4B66;
+  color: #0B264C;
   margin: 0;
 }
 
@@ -55,7 +55,7 @@
 }
 
 .doctor-profile-info-section h2 {
-  color: #0A4B66;
+  color: #0B264C;
   margin-bottom: 5px;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .doctor-profile-details-card h3 {
-  color: #0A4B66;
+  color: #0B264C;
   margin-bottom: 20px;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .doctor-detail-item p {
-  color: #0A4B66;
+  color: #0B264C;
   font-weight: 500;
   margin: 0;
 }
@@ -140,7 +140,7 @@
 }
 
 .doctor-availability-card h3 {
-  color: #0A4B66;
+  color: #0B264C;
   margin-bottom: 20px;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .doctor-account-settings-card h3 {
-  color: #0A4B66;
+  color: #0B264C;
   margin-bottom: 20px;
 }
 
@@ -235,7 +235,7 @@
   background: #f8f9fa;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
-  color: #0A4B66;
+  color: #0B264C;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s;

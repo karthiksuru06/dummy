@@ -3,7 +3,7 @@
   min-height: 100vh;
   height: 100vh;
   display: flex;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
   background: #ffffff;
   overflow: hidden;
 }

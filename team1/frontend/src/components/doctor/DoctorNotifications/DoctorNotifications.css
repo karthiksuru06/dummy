@@ -3,7 +3,7 @@
 
 .doctor-notifications {
   padding: 2.5rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-body);
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -100,21 +100,21 @@
 }
 
 .doctor-notification-item:hover {
-  border-color: #6366f1;
+  border-color: #2C5F9F;
   transform: translateX(8px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
 .doctor-notification-item.unread {
   background: rgba(99, 102, 241, 0.03);
-  border-left: 4px solid #6366f1;
+  border-left: 4px solid #2C5F9F;
 }
 
 .doctor-notification-icon-wrapper {
   width: 52px;
   height: 52px;
   background: #f1f5f9;
-  color: #6366f1;
+  color: #2C5F9F;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -156,7 +156,7 @@
 .doctor-notification-sender-info {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #6366f1;
+  color: #2C5F9F;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -167,7 +167,7 @@
   right: 1.5rem;
   width: 10px;
   height: 10px;
-  background: #6366f1;
+  background: #2C5F9F;
   border-radius: 50%;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
