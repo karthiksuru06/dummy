@@ -219,11 +219,6 @@ const SLOTS = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
       </div>
 
       <div className="register-box">
-        <div className="role-toggle">
-          <button className={role === "patient" ? "active" : ""} onClick={() => setRole("patient")}>Patient</button>
-          <button className={role === "doctor" ? "active" : ""} onClick={() => setRole("doctor")}>Doctor</button>
-        </div>
-
         <form className="register-form" onSubmit={handleSubmit}>
           {/* show feedback message on any step (not only final) */}
           {message && <p className="message">{message}</p>}
@@ -231,6 +226,18 @@ const SLOTS = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
           {currentStep === 1 && (
             <div className="form-section">
               <h3 className="section-title">Personal Information</h3>
+              
+              <div className="input-group" style={{ marginBottom: '20px' }}>
+                <label>Account Type</label>
+                <select 
+                  value={role} 
+                  onChange={(e) => setRole(e.target.value)}
+                >
+                  <option value="patient">Patient</option>
+                  <option value="doctor">Doctor</option>
+                </select>
+              </div>
+
               <div className="form-row">
                 <div className="input-group">
                   <label>First Name</label>
