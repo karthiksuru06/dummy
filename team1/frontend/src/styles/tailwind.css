@@ -1,0 +1,42 @@
+/* Editorial display serif (Fraunces) paired with the existing Plus Jakarta Sans
+   body. Distinctive + trustworthy; deliberately not Inter/Roboto. */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Reusable surface + button primitives for the migrated (Tailwind) screens.
+     Scoped to elements that opt in via these classes — they don't leak. */
+  .tw-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-sans font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2;
+  }
+  .tw-btn-primary {
+    @apply tw-btn bg-brand-700 text-white px-7 py-3.5 shadow-card hover:bg-brand-800 hover:-translate-y-0.5 hover:shadow-lift;
+  }
+  .tw-btn-accent {
+    @apply tw-btn bg-teal-500 text-brand-900 px-7 py-3.5 shadow-card hover:bg-teal-400 hover:-translate-y-0.5;
+  }
+  .tw-btn-ghost {
+    @apply tw-btn bg-white/0 text-brand-700 px-6 py-3.5 ring-1 ring-brand-200 hover:bg-brand-50 hover:ring-brand-300;
+  }
+  .tw-eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full bg-teal-50 px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-[0.18em] text-teal-700;
+  }
+  .tw-card {
+    @apply rounded-3xl bg-white p-7 shadow-soft ring-1 ring-brand-100 transition-all duration-300;
+  }
+}
+
+/* Subtle grain + mesh atmosphere for hero/CTA sections (depth, not flatness). */
+.tw-mesh {
+  background-image:
+    radial-gradient(60% 60% at 15% 10%, rgba(15, 181, 166, 0.12) 0%, transparent 60%),
+    radial-gradient(50% 50% at 90% 0%, rgba(44, 107, 170, 0.14) 0%, transparent 55%);
+}
+.tw-mesh-dark {
+  background-image:
+    radial-gradient(50% 50% at 12% 0%, rgba(15, 181, 166, 0.18) 0%, transparent 55%),
+    radial-gradient(55% 55% at 95% 100%, rgba(44, 107, 170, 0.22) 0%, transparent 55%);
+}

@@ -1,56 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import "./header.css";
+import { Menu, X, Plus } from "lucide-react";
+
+const NAV = [
+  { label: "Home", href: "#home" },
+  { label: "About", href: "#about" },
+  { label: "Services", href: "#services" },
+  { label: "Doctors", href: "#doctors" },
+  { label: "Contact", href: "#contact" },
+];
 
 const Header = () => {
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const toggleMobileNav = () => {
-    setIsMobileNavOpen(!isMobileNavOpen);
-  };
-
   return (
-    <motion.header 
-      className={`header ${isScrolled ? 'header-scrolled' : ''}`}
-      initial={{ y: -100, opacity: 0 }}
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-paper/85 backdrop-blur-md shadow-soft" : "bg-transparent"
+      }`}
     >
-      <div className="header-inner">
-        <Link to="/" className="brand">
-          <span className="brand-title">MEDVIZ</span>
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link to="/" className="group flex items-center gap-2.5" aria-label="MEDviz home">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-900 text-teal-400 shadow-soft transition-transform group-hover:rotate-6">
+            <Plus className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
+          </span>
+          <span className="font-display text-2xl font-semibold tracking-tight text-brand-900">
+            MED<span className="text-teal-600">viz</span>
+          </span>
         </Link>
-        <div className={`header-right ${isMobileNavOpen ? 'nav-open' : ''}`}>
-          <nav className="nav">
-            <a href="#home" className="nav-link" onClick={toggleMobileNav}>Home</a>
-            <a href="#about" className="nav-link" onClick={toggleMobileNav}>About</a>
-            <a href="#services" className="nav-link" onClick={toggleMobileNav}>Services</a>
-            <a href="#doctors" className="nav-link" onClick={toggleMobileNav}>Doctors</a>
-            <a href="#contact" className="nav-link" onClick={toggleMobileNav}>Contact</a>
-            <Link to="/login" className="btn-ghost" onClick={toggleMobileNav}>
-              Login
-            </Link>
-          </nav>
-        </div>
+
+        <nav className="hidden items-center gap-1 md:flex">
+          {NAV.map((n) => (
+            <a
+              key={n.label}
+              href={n.href}
+              className="rounded-full px-4 py-2 font-sans text-sm font-medium text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-800"
+            >
+              {n.label}
+            </a>
+          ))}
+          <Link to="/login" className="tw-btn-primary ml-3 px-6 py-2.5 text-sm">
+            Login
+          </Link>
+        </nav>
+
         <button
-          className="mobile-toggle"
-          onClick={toggleMobileNav}
-          aria-label={isMobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={isMobileNavOpen}
+          className="grid h-10 w-10 place-items-center rounded-xl text-brand-900 ring-1 ring-brand-200 md:hidden"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
         >
-          <span className={`hamburger ${isMobileNavOpen ? 'open' : ''}`} aria-hidden="true"></span>
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
+
+      {open && (
+        <motion.nav
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mb-3 rounded-3xl bg-white p-3 shadow-card ring-1 ring-brand-100 md:hidden"
+        >
+          {NAV.map((n) => (
+            <a
+              key={n.label}
+              href={n.href}
+              onClick={() => setOpen(false)}
+              className="block rounded-2xl px-4 py-3 font-sans text-sm font-medium text-ink-soft hover:bg-brand-50 hover:text-brand-800"
+            >
+              {n.label}
+            </a>
+          ))}
+          <Link to="/login" onClick={() => setOpen(false)} className="tw-btn-primary mt-2 w-full">
+            Login
+          </Link>
+        </motion.nav>
+      )}
     </motion.header>
   );
 };

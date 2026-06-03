@@ -1,96 +1,89 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { FaTwitter, FaGithub, FaInstagram } from "react-icons/fa";
-import "./footer.css";
+import { Twitter, Github, Instagram, Plus } from "lucide-react";
 
-const links = ["Home", "About", "Services", "Doctors", "Contact"];
-const legal = ["Privacy Policy", "Terms of Service"];
-
-const footerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2
-    }
-  }
-};
-
-const footerItem = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: "spring", stiffness: 100, damping: 15 } 
-  }
-};
+const NAV = ["Home", "About", "Services", "Doctors", "Contact"];
+const PLATFORM = ["Security", "Privacy", "Status", "Documentation"];
+const SOCIALS = [
+  { icon: Twitter, href: "https://twitter.com", label: "MEDviz on Twitter" },
+  { icon: Github, href: "https://github.com", label: "MEDviz on GitHub" },
+  { icon: Instagram, href: "https://instagram.com", label: "MEDviz on Instagram" },
+];
 
 export default function Footer() {
   return (
-    <footer className="footer">
-      <motion.div 
-        className="footer-grid"
-        variants={footerContainer}
-        initial="hidden"
-        whileInView="visible"
+    <footer className="bg-brand-900 px-6 pt-20 pb-8 text-brand-100">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
         viewport={{ once: true, margin: "-50px" }}
+        className="mx-auto grid max-w-7xl gap-12 md:grid-cols-2 lg:grid-cols-4"
       >
-        <motion.div variants={footerItem} className="footer-brand-col">
-          <h3>MEDviz</h3>
-          <p>The next generation of medical visualization and patient care. Simple, fast, and reliable solutions built for practitioners.</p>
-          <div className="social-icons">
-            <a href="https://twitter.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on Twitter"><FaTwitter aria-hidden="true" /></a>
-            <a href="https://github.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on GitHub"><FaGithub aria-hidden="true" /></a>
-            <a href="https://instagram.com" className="social-icon" target="_blank" rel="noopener noreferrer" aria-label="MEDviz on Instagram"><FaInstagram aria-hidden="true" /></a>
+        <div className="max-w-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-teal-500 text-brand-900">
+              <Plus className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
+            </span>
+            <span className="font-display text-2xl font-semibold text-white">MEDviz</span>
           </div>
-        </motion.div>
-
-        <motion.div variants={footerItem} className="footer-links-col">
-          <h4>Navigation</h4>
-          <ul>
-            {links.map((l) => (
-              <li key={l}>
-                <a href={"#" + l.toLowerCase()}>{l}</a>
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div variants={footerItem} className="footer-contact-col">
-          <h4>Office</h4>
-          <p>
-            Main Street, Kakinada<br />
-            Andhra Pradesh, 52345 <br />
-            <br />
-            <strong>Contact</strong><br />
-            support@medviz.tech <br />
-            +91 12345 67890
+          <p className="mt-5 font-sans text-sm leading-relaxed text-brand-200">
+            The next generation of telemedicine and patient care — simple, fast,
+            and reliable, built around the people who use it.
           </p>
-        </motion.div>
+          <div className="mt-6 flex gap-3">
+            {SOCIALS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white/5 text-brand-100 ring-1 ring-white/10 transition hover:bg-teal-500 hover:text-brand-900"
+              >
+                <s.icon className="h-5 w-5" aria-hidden="true" />
+              </a>
+            ))}
+          </div>
+        </div>
 
-        <motion.div variants={footerItem} className="footer-legal-col">
-          <h4>Platform</h4>
-          <ul>
-            {["Security", "Privacy", "Status", "Documentation"].map((item) => (
-              <li key={item}>
-                <a href="#contact">{item}</a>
+        <div>
+          <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-white">Navigation</h4>
+          <ul className="mt-5 space-y-3">
+            {NAV.map((l) => (
+              <li key={l}>
+                <a href={"#" + l.toLowerCase()} className="font-sans text-sm text-brand-200 transition hover:text-teal-300">{l}</a>
               </li>
             ))}
           </ul>
-        </motion.div>
+        </div>
+
+        <div>
+          <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-white">Platform</h4>
+          <ul className="mt-5 space-y-3">
+            {PLATFORM.map((l) => (
+              <li key={l}>
+                <a href="#contact" className="font-sans text-sm text-brand-200 transition hover:text-teal-300">{l}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-white">Office</h4>
+          <p className="mt-5 font-sans text-sm leading-relaxed text-brand-200">
+            Main Street, Kakinada<br />Andhra Pradesh, 52345
+          </p>
+          <p className="mt-4 font-sans text-sm text-brand-200">
+            support@medviz.tech<br />+91 12345 67890
+          </p>
+        </div>
       </motion.div>
 
-      <motion.div 
-        className="footer-bottom"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 1 }}
-        viewport={{ once: true }}
-      >
-        <div>© 2025 MEDviz — All rights reserved</div>
-        <div>© 2025 Team-1</div>
-      </motion.div>
+      <div className="mx-auto mt-16 flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-white/10 pt-8 font-sans text-sm text-brand-300 sm:flex-row">
+        <span>© 2025 MEDviz — All rights reserved</span>
+        <span>Built by Team-1</span>
+      </div>
     </footer>
   );
 }
