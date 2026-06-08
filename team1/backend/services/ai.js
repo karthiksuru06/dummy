@@ -15,39 +15,21 @@ const axios = require("axios");
 const axiosRetry = require("axios-retry");
 
 /* ------------------------------------------------------------------ */
-/*  Ollama client factory                                               */
+/*  Gemini API caller                                               */
 /* ------------------------------------------------------------------ */
-function createOllamaClient() {
-  const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434";
-  const timeout = parseInt(process.env.CHAT_TIMEOUT_MS || "120000", 10);
-  const retries = parseInt(process.env.CHAT_RETRIES || "2", 10);
-
-  const client = axios.create({ baseURL: ollamaUrl, timeout });
-
-  axiosRetry(client, {
-    retries,
-    retryDelay: axiosRetry.exponentialDelay,
-    retryCondition: (err) =>
-      axiosRetry.isNetworkOrIdempotentRequestError(err) ||
-      err.code === "ECONNABORTED",
-  });
-
-  return client;
-}
-
-async function callOllama(prompt) {
-  const client = createOllamaClient();
+async function callAI(prompt) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
   try {
-    const res = await client.post("/api/generate", {
-      model: process.env.OLLAMA_MODEL || "llama3.2:3b",
-      prompt,
-      stream: false,
+    const res = await axios.post(url, {
+      contents: [{
+        parts: [{ text: prompt }]
+      }]
     });
-    return (res.data.response || "").trim();
+    return res.data.candidates[0].content.parts[0].text.trim();
   } catch (err) {
-    const status = err?.response?.status;
-    console.error("Ollama error:", status || err.message);
-    throw new Error(status ? `Ollama HTTP ${status}` : "Ollama unreachable");
+    console.error("Gemini error:", err?.response?.data || err.message);
+    throw new Error("Gemini API failed");
   }
 }
 
@@ -441,7 +423,7 @@ Do not explain. Output only "true" or "false".
 Input: "${sanitizeInput(message)}"`;
 
   try {
-    const raw = await callOllama(prompt);
+    const raw = await callAI(prompt);
     return raw.toLowerCase().includes("true");
   } catch {
     return false; // Heuristic already checked above
@@ -488,7 +470,7 @@ Respond STRICTLY in this JSON format (no other text):
 }`;
 
   try {
-    const raw = await callOllama(prompt);
+    const raw = await callAI(prompt);
     const parsed = parseJSON(raw);
     if (parsed && parsed.type && parsed.question && remaining.includes(parsed.type)) {
       return parsed;
@@ -596,7 +578,7 @@ Respond STRICTLY in JSON (no other text):
   "message": "<your explanation message>"
 }`;
 
-    const raw = await callOllama(prompt);
+    const raw = await callAI(prompt);
     const parsed = parseJSON(raw);
     if (parsed && parsed.message) {
       message = parsed.message;
