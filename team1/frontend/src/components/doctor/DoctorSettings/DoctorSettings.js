@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaShieldAlt, FaBell, FaClock, FaSave } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './DoctorSettings.css';
 import doctorService from '../../../services/doctorService';
 
@@ -60,10 +61,10 @@ const DoctorSettings = () => {
       };
 
       await doctorService.updateSettings(doctorId, settingsData);
-      alert('Settings saved successfully!');
+      toast.success('Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error.message);
-      alert('Failed to save settings');
+      toast.error('Failed to save settings');
     }
   };
 

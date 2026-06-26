@@ -1,7 +1,6 @@
 // src/components/pages/Register/register.js
 
-// 🎯 FIX 1: Ensure useState is imported from React
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../../api/axiosConfig";
 import AvailabilityGrid from "../../shared/AvailabilityGrid/AvailabilityGrid";
@@ -34,6 +33,27 @@ function Register() {
 
   // ✅ new state for password mismatch
   const [passwordMismatch, setPasswordMismatch] = useState("");
+
+  // Load state from sessionStorage on mount
+  useEffect(() => {
+    const savedRole = sessionStorage.getItem('register_role');
+    const savedStep = sessionStorage.getItem('register_step');
+    const savedForm = sessionStorage.getItem('register_form');
+    const savedAvailability = sessionStorage.getItem('register_availability');
+
+    if (savedRole) setRole(savedRole);
+    if (savedStep) setCurrentStep(Number(savedStep));
+    if (savedForm) setForm(JSON.parse(savedForm));
+    if (savedAvailability) setAvailability(JSON.parse(savedAvailability));
+  }, []);
+
+  // Save state to sessionStorage on change
+  useEffect(() => {
+    sessionStorage.setItem('register_role', role);
+    sessionStorage.setItem('register_step', String(currentStep));
+    sessionStorage.setItem('register_form', JSON.stringify(form));
+    sessionStorage.setItem('register_availability', JSON.stringify(availability));
+  }, [role, currentStep, form, availability]);
 
     // Initialize availability schedule for doctors 
     const initializeAvailability = () => {
@@ -161,6 +181,11 @@ const SLOTS = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
       Object.keys(form).forEach(key => formData.append(key, form[key]));
       if (file) formData.append(role === "patient" ? "medical_reports" : "cert_docs", file);
 
+      // Explicit informed consent (the terms checkbox is `required`, so reaching
+      // here means the user accepted). Backend records consent_version + timestamp.
+      formData.append("agreed_terms", "true");
+      formData.append("consent_version", "1.0");
+
       if (role === "doctor") {
         const availabilityArray = [];
         Object.keys(availability).forEach(day => {
@@ -180,10 +205,28 @@ const SLOTS = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
 
             setMessage(res.data.message);
 
-      if (role === "doctor" && res.data.requiresApproval) {
+      // Clear sessionStorage on successful submission
+      sessionStorage.removeItem('register_role');
+      sessionStorage.removeItem('register_step');
+      sessionStorage.removeItem('register_form');
+      sessionStorage.removeItem('register_availability');
+
+      // The register endpoints do not issue an auth token, so we cannot send
+      // the user straight to a protected dashboard (ProtectedRoute would bounce
+      // them to /login). Send them to the login page with a success message.
+      if (res.data.token) {
+        // Future-proof: if the backend ever returns a token on register, log in
+        // the same way login.js does before navigating to the dashboard.
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("user", JSON.stringify(res.data.user || res.data.doctor || {}));
+        navigate(role === "patient" ? "/patient/dashboard" : "/doctor/home");
+      } else if (role === "doctor" && res.data.requiresApproval) {
         setTimeout(() => navigate("/login"), 3000);
       } else {
-        navigate(role === "patient" ? "/patient/dashboard" : "/login");
+        navigate("/login", {
+          state: { message: res.data.message || "Registration successful! Please sign in." }
+        });
       }
     } catch (err) {
       setMessage(err.response?.data?.message || "Error");
@@ -374,7 +417,11 @@ const SLOTS = ["09:00-11:00", "11:00-13:00", "14:00-16:00", "16:00-18:00"];
               <h3 className="section-title">Review & Submit</h3>
               <div className="terms">
                 <input type="checkbox" required id="terms" />
-                <label htmlFor="terms">I agree to Terms & Privacy Policy</label>
+                <label htmlFor="terms">
+                  I agree to the Terms &amp; the{" "}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>,
+                  including the processing of my health information as described.
+                </label>
               </div>
             </div>
           )}

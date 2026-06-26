@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaPhone, FaEnvelope, FaMapMarkerAlt, FaBriefcase } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './DoctorProfile.css';
 import doctorService from '../../../services/doctorService';
 
@@ -27,7 +28,7 @@ const DoctorProfile = () => {
       fetchDoctorProfile(id);
     } else {
       setLoading(false);
-      alert('No doctor data found. Please login again.');
+      toast.error('No doctor data found. Please login again.');
     }
   }, []);
 
@@ -72,7 +73,7 @@ const DoctorProfile = () => {
       setAvailability(formattedAvailability);
 
     } catch (error) {
-      alert('Failed to load doctor profile.');
+      toast.error('Failed to load doctor profile.');
     } finally {
       setLoading(false);
     }
@@ -110,9 +111,9 @@ const DoctorProfile = () => {
         availability_schedule: availabilityArray
       });
 
-      alert('Availability updated successfully!');
+      toast.success('Availability updated successfully!');
     } catch (error) {
-      alert('Failed to update availability');
+      toast.error('Failed to update availability');
     }
   };
 

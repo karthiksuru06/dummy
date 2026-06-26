@@ -14,6 +14,7 @@ import {
   FaTrash,
   FaSave
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './DoctorAppointments.css';
 import doctorService from '../../../services/doctorService';
 
@@ -132,14 +133,14 @@ const DoctorAppointments = () => {
       const reason = prompt('Please enter rejection reason:');
       if (reason) {
         await doctorService.rejectAppointment(appointmentId, { reason });
-        alert('Appointment rejected successfully');
+        toast.success('Appointment rejected successfully');
         if (doctorId) {
           fetchAppointments(doctorId);
         }
       }
     } catch (error) {
       console.error('Error rejecting appointment:', error.message);
-      alert('Failed to reject appointment');
+      toast.error('Failed to reject appointment');
     }
   };
 
@@ -153,7 +154,7 @@ const DoctorAppointments = () => {
         meeting_notes: meetingForm.notes
       });
 
-      alert('Appointment approved and meeting scheduled successfully');
+      toast.success('Appointment approved and meeting scheduled successfully');
       setShowMeetingModal(false);
 
       // Reset form
@@ -169,7 +170,7 @@ const DoctorAppointments = () => {
       }
     } catch (error) {
       console.error('Error creating meeting:', error.message);
-      alert('Failed to approve appointment');
+      toast.error('Failed to approve appointment');
     }
   };
 
@@ -182,25 +183,25 @@ const DoctorAppointments = () => {
         // Validate formats before sending — a malformed date/time was stored
         // verbatim and then broke the alert/auto-complete jobs that parse it.
         if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate.trim()) || isNaN(Date.parse(newDate.trim()))) {
-          alert('Please enter a valid date in YYYY-MM-DD format.');
+          toast.error('Please enter a valid date in YYYY-MM-DD format.');
           return;
         }
         if (!/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(newTime.trim())) {
-          alert('Please enter a valid time like "10:00 AM".');
+          toast.error('Please enter a valid time like "10:00 AM".');
           return;
         }
         await doctorService.rescheduleAppointment(appointment.id, {
           new_date: newDate,
           new_time: newTime
         });
-        alert('Appointment rescheduled successfully');
+        toast.success('Appointment rescheduled successfully');
         if (doctorId) {
           fetchAppointments(doctorId);
         }
       }
     } catch (error) {
       console.error('Error rescheduling appointment:', error.message);
-      alert('Failed to reschedule appointment');
+      toast.error('Failed to reschedule appointment');
     }
   };
 
@@ -209,14 +210,14 @@ const DoctorAppointments = () => {
       const reason = prompt('Please enter cancellation reason:');
       if (reason) {
         await doctorService.cancelAppointment(appointmentId, { reason });
-        alert('Appointment cancelled successfully');
+        toast.success('Appointment cancelled successfully');
         if (doctorId) {
           fetchAppointments(doctorId);
         }
       }
     } catch (error) {
       console.error('Error cancelling appointment:', error.message);
-      alert('Failed to cancel appointment');
+      toast.error('Failed to cancel appointment');
     }
   };
 
@@ -276,7 +277,7 @@ const DoctorAppointments = () => {
       };
 
       await doctorService.createPrescription(prescriptionData);
-      alert('Prescription created successfully');
+      toast.success('Prescription created successfully');
       setShowPrescriptionModal(false);
 
       // Reset form
@@ -297,7 +298,7 @@ const DoctorAppointments = () => {
       console.error('Error saving prescription:', error.message);
       // Surface the server message (e.g. "A prescription already exists for
       // this appointment") instead of a generic failure.
-      alert(error.response?.data?.message || 'Failed to save prescription');
+      toast.error(error.response?.data?.message || 'Failed to save prescription');
     }
   };
 

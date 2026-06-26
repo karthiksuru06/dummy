@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import API from "../../../api/axiosConfig";
 import Header from '../PatientHeader/Header';
 import BackButton from '../../common/BackButton/BackButton';
@@ -21,12 +22,6 @@ const Reports = () => {
   });
   const [uploading, setUploading] = useState(false);
   
-  const getBaseURL = () => {
-    return process.env.REACT_APP_API_BASE || "http://localhost:5000";
-  };
-  
-  const apiBaseURL = getBaseURL();
-
   useEffect(() => {
     if (activeTab === 'reports') {
       fetchReports();
@@ -83,24 +78,40 @@ const Reports = () => {
     setViewModalOpen(true);
   };
 
-  const handleDownload = async (reportId, fileName) => {
+  const handleDownload = (report) => {
     try {
-      const response = await API.get(`/patients/reports/download/${reportId}`, {
-        responseType: 'blob'
-      });
-
-      // Create a blob URL and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Use the short-lived signed Cloudinary URL minted by the authenticated
+      // list endpoint. It loads without an Authorization header (a plain link
+      // can't send one), so no 401, and the link expires server-side.
+      const fileUrl = report.signedUrl || report.url || report.filePath;
+      if (!fileUrl) {
+        toast.error("No file URL available for this report");
+        return;
+      }
       const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileName);
+      link.href = fileUrl;
+      link.setAttribute('download', report.fileName || 'report');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading report:", error);
-      alert("Failed to download report");
+      toast.error("Failed to download report");
+    }
+  };
+
+  const handleDelete = async (reportId, fileName) => {
+    if (window.confirm(`Are you sure you want to delete the report "${fileName}"?`)) {
+      try {
+        await API.delete(`/patients/reports/${reportId}`);
+        toast.success('Report deleted successfully');
+        fetchReports(); // Refresh the list
+      } catch (error) {
+        console.error("Error deleting report:", error);
+        toast.error("Failed to delete report");
+      }
     }
   };
 
@@ -119,12 +130,12 @@ const Reports = () => {
     if (file) {
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please select a PDF, JPG, JPEG, or PNG file');
+        toast.error('Please select a PDF, JPG, JPEG, or PNG file');
         e.target.value = '';
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB');
+        toast.error('File size must be less than 10MB');
         e.target.value = '';
         return;
       }
@@ -134,7 +145,7 @@ const Reports = () => {
 
   const handleUploadSubmit = async () => {
     if (!uploadFile) {
-      alert('Please select a file to upload');
+      toast.error('Please select a file to upload');
       return;
     }
 
@@ -149,7 +160,7 @@ const Reports = () => {
       const response = await API.post('/patients/reports/upload', formData);
 
       if (response.status === 201) {
-        alert('Report uploaded successfully!');
+        toast.success('Report uploaded successfully!');
         setUploadModalOpen(false);
         setUploadFile(null);
         setUploadData({ reportType: 'Medical Report', description: '' });
@@ -159,7 +170,7 @@ const Reports = () => {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert(error.response?.data?.message || 'Failed to upload report');
+      toast.error(error.response?.data?.message || 'Failed to upload report');
     } finally {
       setUploading(false);
     }
@@ -366,7 +377,7 @@ const Reports = () => {
                       </button>
                       <button
                         className="download-btn"
-                        onClick={() => handleDownload(report.id, report.fileName)}
+                        onClick={() => handleDownload(report)}
                         title="Download Report"
                       >
                         <svg
@@ -385,6 +396,27 @@ const Reports = () => {
                           <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
                         Download
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(report.id, report.fileName)}
+                        title="Delete Report"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -534,9 +566,13 @@ const Reports = () => {
               </button>
             </div>
             <div className="modal-body">
+              {/* Load the short-lived signed Cloudinary URL from the list
+                  endpoint directly. <iframe>/<img> can't send an Authorization
+                  header, so we never point them at the header-only view route
+                  (which would 401). The signed URL needs no header and expires. */}
               {selectedReport.fileType === 'PDF' ? (
                 <iframe
-                  src={`${apiBaseURL}/api/patients/reports/view/${selectedReport.id}`}
+                  src={selectedReport.signedUrl || selectedReport.url || selectedReport.filePath}
                   title={selectedReport.fileName}
                   width="100%"
                   height="600px"
@@ -544,7 +580,7 @@ const Reports = () => {
                 />
               ) : (
                 <img
-                  src={`${apiBaseURL}/api/patients/reports/view/${selectedReport.id}`}
+                  src={selectedReport.signedUrl || selectedReport.url || selectedReport.filePath}
                   alt={selectedReport.fileName}
                   style={{ maxWidth: '100%', height: 'auto' }}
                 />
@@ -553,7 +589,7 @@ const Reports = () => {
             <div className="modal-footer">
               <button
                 className="download-modal-btn"
-                onClick={() => handleDownload(selectedReport.id, selectedReport.fileName)}
+                onClick={() => handleDownload(selectedReport)}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

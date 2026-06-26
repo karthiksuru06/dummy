@@ -11,6 +11,7 @@ import {
   FaNotesMedical,
   FaFilePdf
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import './DoctorPatients.css';
 import doctorService from '../../../services/doctorService';
 
@@ -73,7 +74,7 @@ const DoctorPatients = () => {
       // The download will be handled by the browser
     } catch (error) {
       console.error('Error downloading prescription:', error.message);
-      alert('Failed to download prescription');
+      toast.error('Failed to download prescription');
     }
   };
 
@@ -82,7 +83,7 @@ const DoctorPatients = () => {
     if (report.filePath) {
       window.open(`http://localhost:5000/${report.filePath}`, '_blank');
     } else {
-      alert('Report file not available');
+      toast.error('Report file not available');
     }
   };
 

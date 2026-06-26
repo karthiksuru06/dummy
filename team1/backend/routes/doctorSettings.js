@@ -3,6 +3,18 @@ const router = express.Router();
 const DoctorSettings = require('../models/DoctorSettings');
 const Doctor = require('../models/Doctor');
 const bcrypt = require('bcryptjs');
+const { audit } = require('../middleware/audit');
+
+// Ownership guard: this router is mounted behind authenticate + requireRole('doctor').
+// A doctor may only ever read/modify their OWN settings — reject any :doctorId
+// that is not the authenticated doctor (previously any doctor could read/update
+// another doctor's settings and change their password).
+router.param('doctorId', (req, res, next, doctorId) => {
+  if (!req.user || String(doctorId) !== req.user.id) {
+    return res.status(403).json({ success: false, message: 'Forbidden: not your settings' });
+  }
+  next();
+});
 
 // Get doctor settings
 router.get('/:doctorId', async (req, res) => {
@@ -70,7 +82,7 @@ router.put('/:doctorId', async (req, res) => {
 });
 
 // Change password
-router.post('/:doctorId/change-password', async (req, res) => {
+router.post('/:doctorId/change-password', audit('doctor.password.change', 'Doctor'), async (req, res) => {
   try {
     const { doctorId } = req.params;
     const { current_password, new_password } = req.body;
@@ -79,6 +91,13 @@ router.post('/:doctorId/change-password', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Current password and new password are required'
+      });
+    }
+
+    if (typeof new_password !== 'string' || new_password.length < 8 || !/[a-zA-Z]/.test(new_password) || !/\d/.test(new_password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 8 characters and include a letter and a number'
       });
     }
 

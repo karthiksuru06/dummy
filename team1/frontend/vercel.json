@@ -1,0 +1,13 @@
+{
+  "build": {
+    "env": {
+      "CI": "false",
+      "REACT_APP_API_BASE": "https://medviz-backend.onrender.com",
+      "REACT_APP_SOCKET_URL": "https://medviz-backend.onrender.com"
+    }
+  },
+  "env": {
+    "REACT_APP_API_BASE": "https://medviz-backend.onrender.com",
+    "REACT_APP_SOCKET_URL": "https://medviz-backend.onrender.com"
+  }
+}

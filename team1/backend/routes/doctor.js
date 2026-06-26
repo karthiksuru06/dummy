@@ -5,6 +5,31 @@ const { authenticate, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper function to geocode address using OpenStreetMap Nominatim
+async function geocodeAddress(address) {
+  if (!address) return { latitude: null, longitude: null };
+  try {
+    const encodedAddress = encodeURIComponent(address);
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+      return {
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon)
+      };
+    }
+  } catch (error) {
+    console.error('Geocoding error:', error);
+  }
+  return { latitude: null, longitude: null };
+}
+
+// A doctor may only access their own dashboard keyed by :doctorId (admins any).
+function ensureDoctorParamSelfOrAdmin(req, res, next) {
+  if (req.user.role === 'admin' || req.user.id === String(req.params.doctorId)) return next();
+  return res.status(403).json({ success: false, message: 'Forbidden: not your dashboard' });
+}
+
 // A doctor may only modify their own record (admins may modify any).
 function ensureSelfOrAdmin(req, res, next) {
   if (req.user.role === 'admin' || req.user.id === String(req.params.id)) return next();
@@ -83,6 +108,8 @@ router.get('/available', async (req, res) => {
         end_time: doctor.end_time || '5:00 PM',
         clinic_name: doctor.clinic_name || 'N/A',
         clinic_address: doctor.clinic_address || 'N/A',
+        latitude: doctor.latitude,
+        longitude: doctor.longitude,
         gender: doctor.gender,
         address: doctor.address,
         location: location,
@@ -193,7 +220,7 @@ router.get('/:id/slots', async (req, res) => {
 });
 
 // Get doctor profile
-router.get('/:id/profile', async (req, res) => {
+router.get('/:id/profile', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -228,6 +255,8 @@ router.get('/:id/profile', async (req, res) => {
         experience: doctor.experience,
         clinic_name: doctor.clinic_name,
         clinic_address: doctor.clinic_address,
+        latitude: doctor.latitude,
+        longitude: doctor.longitude,
         profile_picture: doctor.profile_picture,
         availability_schedule: doctor.availability_schedule || [],
         total_consultations: doctor.total_consultations || 0
@@ -259,6 +288,16 @@ router.put('/:id/profile', doctorSelf, async (req, res) => {
       clinic_address
     } = req.body;
 
+    let latitude = null;
+    let longitude = null;
+
+    // Auto-geocode if clinic_address is provided or changed
+    if (clinic_address) {
+      const coords = await geocodeAddress(clinic_address);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    }
+
     const doctor = await Doctor.findByIdAndUpdate(
       id,
       {
@@ -270,7 +309,9 @@ router.put('/:id/profile', doctorSelf, async (req, res) => {
         specialization,
         experience,
         clinic_name,
-        clinic_address
+        clinic_address,
+        latitude,
+        longitude
       },
       { new: true }
     ).select('-password');
@@ -366,7 +407,7 @@ router.post('/:id/profile-picture', doctorSelf, async (req, res) => {
 });
 
 // Get dashboard data/metrics
-router.get('/:doctorId/dashboard', async (req, res) => {
+router.get('/:doctorId/dashboard', authenticate, requireRole('doctor', 'admin'), ensureDoctorParamSelfOrAdmin, async (req, res) => {
   try {
     const { doctorId } = req.params;
 
@@ -401,10 +442,8 @@ router.get('/:doctorId/dashboard', async (req, res) => {
       status: 'pending'
     });
 
-    // Update total_consultations in doctor profile
-    await Doctor.findByIdAndUpdate(doctorId, {
-      total_consultations: totalConsultations
-    });
+    // NOTE: a GET must not mutate. (Removed the findByIdAndUpdate that wrote
+    // total_consultations on every dashboard read.)
 
     res.json({
       success: true,

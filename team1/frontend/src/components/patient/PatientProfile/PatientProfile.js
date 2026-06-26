@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 import API from '../../../api/axiosConfig';
 import Header from '../PatientHeader/Header';
 import "./PatientProfile.css";
@@ -59,7 +60,7 @@ const PatientProfile = () => {
         if (err.response?.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('role');
-          alert('Your session has expired. Please login again.');
+          toast.error('Your session has expired. Please login again.');
           navigate('/patient/login');
           return;
         }
@@ -73,7 +74,7 @@ const PatientProfile = () => {
   }, [navigate]);
 
   const handleEditRedirect = () => {
-    alert("To edit your profile, please go to the Settings page.");
+    toast.info("To edit your profile, please go to the Settings page.");
     navigate('/patient/settings');
   };
 

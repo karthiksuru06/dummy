@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import API from '../../../api/axiosConfig';
 import ClinicLocationMap from './ClinicLocationMap';
 import './DoctorProfileModal.css';
@@ -120,7 +121,7 @@ const DoctorProfileModal = ({ doctor, onClose }) => {
     const reasonError = validateReason(formData.reason);
     if (reasonError) {
       setValidationErrors({ reason: reasonError });
-      alert('Please provide a valid reason for appointment (minimum 10 characters)');
+      toast.error('Please provide a valid reason for appointment (minimum 10 characters)');
       return;
     }
 
@@ -170,13 +171,13 @@ const DoctorProfileModal = ({ doctor, onClose }) => {
       // Detailed error logging
       if (error.response) {
         console.error('Server Error:', error.response.status, error.response.data);
-        alert(`Failed to book appointment: ${error.response.data.message || 'Server error'}`);
+        toast.error(`Failed to book appointment: ${error.response.data.message || 'Server error'}`);
       } else if (error.request) {
         console.error('Network Error: No response from server');
-        alert('Network error. Please check your connection and try again.');
+        toast.error('Network error. Please check your connection and try again.');
       } else {
         console.error('Error:', error.message);
-        alert('Failed to book appointment. Please try again.');
+        toast.error('Failed to book appointment. Please try again.');
       }
     }
   };

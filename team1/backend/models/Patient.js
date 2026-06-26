@@ -18,9 +18,13 @@ const patientSchema = new mongoose.Schema({
   weight: { type: String },
   bpm: { type: String },
   agreed_terms: { type: Boolean, default: false },
+  // Explicit informed-consent capture at registration (PHI compliance).
+  consent_version: { type: String, default: null },
+  consented_at: { type: Date, default: null },
   otp: { type: String, default: null },
   otp_hash: { type: String, default: null },
   otp_created_at: { type: Date, default: null },
+  otp_attempts: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
 });
 

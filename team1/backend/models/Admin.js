@@ -8,6 +8,7 @@ const adminSchema = new mongoose.Schema({
   otp: { type: String, default: null },
   otp_hash: { type: String, default: null },
   otp_created_at: { type: Date, default: null },
+  otp_attempts: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
 });
 

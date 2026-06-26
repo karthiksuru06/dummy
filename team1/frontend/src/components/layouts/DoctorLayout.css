@@ -18,16 +18,16 @@
 }
 
 .dr-nav-icon-btn.dr-bell-active {
-  background: #2C5F9F;
+  background: var(--color-primary);
   color: white;
   width: 52px;
   height: 52px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.2);
 }
 
 .dr-nav-icon-btn.dr-bell-active:hover {
-  background: #4f46e5;
+  background: var(--color-primary-hover); /* was indigo #4f46e5 */
   transform: translateY(-2px);
 }
 

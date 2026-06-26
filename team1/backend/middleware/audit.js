@@ -15,7 +15,7 @@ function audit(action, resourceType) {
         actor_role: req.user ? req.user.role : 'anonymous',
         action,
         resource_type: resourceType,
-        resource_id: req.params.id,
+        resource_id: req.params.id || req.params.patientId || req.params.doctorId || req.params.reportId || req.params.prescriptionId,
         method: req.method,
         path: req.originalUrl,
         status: res.statusCode,

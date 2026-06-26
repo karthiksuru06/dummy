@@ -1,5 +1,25 @@
+const crypto = require('crypto');
 const Appointment = require('../models/Appointment');
 const Task = require('../models/Task');
+const { redis, isRedisEnabled } = require('../utils/redis');
+
+// Unique per-process id so we can tell which instance holds the leader lock.
+const INSTANCE_ID = crypto.randomBytes(8).toString('hex');
+
+// Try to acquire a short-lived leader lock so that with N instances running,
+// only one actually performs the work each tick. Returns true when this
+// instance may run (always true when Redis is disabled — single-instance
+// assumption). The lock auto-expires (PX) so a crashed leader never blocks.
+async function acquireLock(jobName, ttlMs) {
+  if (!isRedisEnabled || !redis) return true;
+  try {
+    const res = await redis.set(`cron:lock:${jobName}`, INSTANCE_ID, 'NX', 'PX', ttlMs);
+    return res === 'OK';
+  } catch (_) {
+    // If the lock check fails, skip this tick rather than risk double-processing.
+    return false;
+  }
+}
 
 // Helper function to parse appointment time string
 const parseAppointmentTime = (timeString) => {
@@ -108,11 +128,20 @@ const startAutoCompleteJob = () => {
     clearInterval(autoCompleteIntervalId);
   }
 
+  // ~90% of the interval so the lock expires before the next tick.
+  const LOCK_TTL_MS = Math.floor(AUTO_COMPLETE_INTERVAL_MS * 0.9);
+
+  const tick = async () => {
+    if (await acquireLock('appointmentAutoComplete', LOCK_TTL_MS)) {
+      await autoCompleteOldAppointments();
+    }
+  };
+
   // Run immediately on startup
-  autoCompleteOldAppointments();
+  tick();
 
   autoCompleteIntervalId = setInterval(() => {
-    autoCompleteOldAppointments();
+    tick();
   }, AUTO_COMPLETE_INTERVAL_MS);
 
   console.log(`Appointment auto-complete scheduler started (runs every ${AUTO_COMPLETE_INTERVAL_MS / 60000} minutes)`);

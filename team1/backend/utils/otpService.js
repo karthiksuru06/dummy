@@ -1,38 +1,8 @@
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Configure Nodemailer transporter with lazy initialization
-let transporter = null;
-let transporterInitialized = false;
-
-// Function to get or create transporter (lazy initialization)
-const getTransporter = () => {
-  if (transporterInitialized) {
-    return transporter;
-  }
-
-  transporterInitialized = true;
-
-  try {
-    if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
-      console.warn('⚠️  Email service not configured. OTP feature will work but emails won\'t be sent.');
-      return null;
-    }
-
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: (process.env.SMTP_PASSWORD || '').trim()
-      }
-    });
-
-    return transporter;
-  } catch (error) {
-    console.warn('⚠️  Failed to initialize email transporter:', error.message);
-    return null;
-  }
-};
+// Initialize Resend client
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Generate a 6-digit OTP using a CSPRNG (Math.random is predictable).
 const generateOTP = () => {
@@ -44,26 +14,30 @@ const hashOTP = (otp) => {
   return crypto.createHash('sha256').update(otp).digest('hex');
 };
 
-// Verify OTP against hashed value
+// Verify OTP against hashed value (constant-time to avoid timing leaks)
 const verifyOTP = (otp, hashedOTP) => {
-  return hashOTP(otp) === hashedOTP;
+  if (!otp || !hashedOTP) return false;
+  const a = Buffer.from(hashOTP(otp), 'hex');
+  const b = Buffer.from(String(hashedOTP), 'hex');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 };
 
-// Send OTP email
+// Send OTP email via Resend
 const sendOTPEmail = async (email, otp, userType) => {
-  const transporter = getTransporter();
-
-  // If email service is not configured, allow OTP to work in test mode
-  if (!transporter) {
-    console.log(`\n📧 ═══════════════════════════════════════════════════════`);
-    console.log(`📧 TEST MODE - OTP Generated`);
-    console.log(`📧 Email: ${email}`);
-    console.log(`📧 OTP: ${otp}`);
-    console.log(`📧 Valid for: ${process.env.OTP_EXPIRY || 10} minutes`);
-    console.log(`📧 ═══════════════════════════════════════════════════════\n`);
-    return { 
-      success: true, 
-      message: 'OTP generated in test mode. Check console for OTP.' 
+  if (!resend) {
+    // SECURITY: never expose the OTP via logs/response in production. If email
+    // is not configured in prod, the reset flow must hard-fail (an attacker
+    // could otherwise read the OTP from logs and take over any account).
+    if (process.env.NODE_ENV === 'production') {
+      console.error('❌ RESEND_API_KEY not configured — refusing to issue OTP in production.');
+      throw new Error('Email service is not configured');
+    }
+    // Local/dev only: print to console so developers can test without email.
+    console.log(`\n📧 [DEV ONLY] OTP for ${email}: ${otp} (valid ${process.env.OTP_EXPIRY || 10} min)\n`);
+    return {
+      success: true,
+      message: 'OTP sent.',
     };
   }
 
@@ -92,19 +66,17 @@ const sendOTPEmail = async (email, otp, userType) => {
       </div>
     `;
 
-    const mailOptions = {
-      from: process.env.SMTP_EMAIL,
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'MEDviz <onboarding@resend.dev>',
       to: email,
       subject: 'MEDviz - Password Reset OTP',
-      html: htmlContent
-    };
+      html: htmlContent,
+    });
 
-    await transporter.sendMail(mailOptions);
     console.log(`✅ OTP email sent successfully to ${email}`);
     return { success: true, message: 'OTP sent successfully to your email' };
   } catch (error) {
     console.error('❌ Email sending error:', error.message);
-    // Throw error so calling code can handle it
     throw error;
   }
 };

@@ -5,6 +5,7 @@ const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const Prescription = require('../models/Prescription');
 const Appointment = require('../models/Appointment');
+const { audit } = require('../middleware/audit');
 
 // Get dashboard metrics
 router.get('/metrics', async (req, res) => {
@@ -271,7 +272,7 @@ router.get('/patients', async (req, res) => {
 });
 
 // Get single patient details by ID
-router.get('/patients/:id', async (req, res) => {
+router.get('/patients/:id', audit('admin.patient.read', 'Patient'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -391,7 +392,7 @@ router.get('/doctors', async (req, res) => {
 });
 
 // Approve doctor
-router.put('/doctors/:id/approve', async (req, res) => {
+router.put('/doctors/:id/approve', audit('admin.doctor.approve', 'Doctor'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -428,7 +429,7 @@ router.put('/doctors/:id/approve', async (req, res) => {
 });
 
 // Reject doctor
-router.put('/doctors/:id/reject', async (req, res) => {
+router.put('/doctors/:id/reject', audit('admin.doctor.reject', 'Doctor'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -465,7 +466,7 @@ router.put('/doctors/:id/reject', async (req, res) => {
 });
 
 // Deactivate doctor
-router.put('/doctors/:id/deactivate', async (req, res) => {
+router.put('/doctors/:id/deactivate', audit('admin.doctor.deactivate', 'Doctor'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -689,7 +690,7 @@ router.get('/prescriptions', async (req, res) => {
 });
 
 // Get single prescription by ID with full details
-router.get('/prescriptions/:id', async (req, res) => {
+router.get('/prescriptions/:id', audit('admin.prescription.read', 'Prescription'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -764,7 +765,7 @@ router.get('/prescriptions/:id', async (req, res) => {
 });
 
 // Delete prescription
-router.delete('/prescriptions/:id', async (req, res) => {
+router.delete('/prescriptions/:id', audit('admin.prescription.delete', 'Prescription'), async (req, res) => {
   try {
     const { id } = req.params;
 

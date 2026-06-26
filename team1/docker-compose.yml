@@ -36,10 +36,11 @@ services:
       PORT: 5000
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/medviz}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
-      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3}
-      # JWT_SECRET, ADMIN_REGISTRATION_SECRET, SMTP_EMAIL, SMTP_PASSWORD
-      # come from ./backend/.env (no safe defaults).
+      # Enables horizontal scaling: shared chatbot state, socket adapter,
+      # rate-limit store, and cron leader-lock. Points at the redis service.
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      # JWT_SECRET, GEMINI_API_KEY, ADMIN_REGISTRATION_SECRET, RESEND_API_KEY,
+      # CLOUDINARY_* come from ./backend/.env (no safe defaults).
     ports:
       - "5000:5000"
     depends_on:

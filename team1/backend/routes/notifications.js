@@ -1,12 +1,55 @@
 const express = require('express');
 const router = express.Router();
 const Notification = require('../models/Notification');
+const { requireRole, requireOwnership } = require('../middleware/auth');
+
+// This router is mounted with `authenticate` (see app.js), so req.user is set.
+// Doctor list routes: only that doctor (or admin) — no cross-doctor reads.
+const ownDoctor = requireOwnership((req) => req.params.doctorId, { allowRoles: ['admin'] });
+// Patient list routes: only that patient (or admin) — admins only as staff,
+// since a doctor must not read a patient's notification inbox.
+const ownPatient = requireOwnership((req) => req.params.patientId, { allowRoles: ['admin'] });
+
+// Max number of notifications returnable in one query (clamp client-supplied limit).
+const MAX_LIMIT = 100;
+const clampLimit = (value) => {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n) || n < 1) return 50;
+  return Math.min(n, MAX_LIMIT);
+};
+
+// Loads the notification at :id and authorizes the caller: they must be the
+// receiver (new receiver_id, or legacy doctor_id/patient_id) or an admin.
+async function loadOwnNotification(req, res, next) {
+  try {
+    const notification = await Notification.findById(req.params.id);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: 'Notification not found' });
+    }
+    if (req.user.role !== 'admin') {
+      const ownerIds = [
+        notification.receiver_id,
+        notification.doctor_id,
+        notification.patient_id
+      ]
+        .filter(Boolean)
+        .map((id) => String(id));
+      if (!ownerIds.includes(req.user.id)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: not your notification' });
+      }
+    }
+    req.notification = notification;
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
 
 // Get all notifications for a doctor (using new receiver-based approach)
-router.get('/doctor/:doctorId', async (req, res) => {
+router.get('/doctor/:doctorId', ownDoctor, async (req, res) => {
   try {
     const { doctorId } = req.params;
-    const { limit = 50, start_date, end_date } = req.query;
+    const { limit, start_date, end_date } = req.query;
 
     // Base query for doctor notifications (new and legacy)
     const baseQuery = {
@@ -27,7 +70,7 @@ router.get('/doctor/:doctorId', async (req, res) => {
       .populate('sender_id', 'full_name last_name email')
       .populate('patient_id', 'full_name last_name')
       .sort({ created_at: -1 })
-      .limit(parseInt(limit));
+      .limit(clampLimit(req.query.limit));
 
     res.json({
       success: true,
@@ -44,7 +87,7 @@ router.get('/doctor/:doctorId', async (req, res) => {
 });
 
 // Get unread notification count for doctor
-router.get('/unread/:doctorId', async (req, res) => {
+router.get('/unread/:doctorId', ownDoctor, async (req, res) => {
   try {
     const { doctorId } = req.params;
 
@@ -70,7 +113,7 @@ router.get('/unread/:doctorId', async (req, res) => {
 });
 
 // Mark notification as read
-router.put('/:id/read', async (req, res) => {
+router.put('/:id/read', loadOwnNotification, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -79,13 +122,6 @@ router.put('/:id/read', async (req, res) => {
       { is_read: true },
       { new: true }
     );
-
-    if (!notification) {
-      return res.status(404).json({
-        success: false,
-        message: 'Notification not found'
-      });
-    }
 
     res.json({
       success: true,
@@ -103,7 +139,7 @@ router.put('/:id/read', async (req, res) => {
 });
 
 // Mark all notifications as read for a doctor
-router.put('/mark-all-read/:doctorId', async (req, res) => {
+router.put('/mark-all-read/:doctorId', ownDoctor, async (req, res) => {
   try {
     const { doctorId } = req.params;
 
@@ -131,14 +167,15 @@ router.put('/mark-all-read/:doctorId', async (req, res) => {
   }
 });
 
-// Create a notification (using new receiver-based approach)
-router.post('/', async (req, res) => {
+// Create a notification (using new receiver-based approach).
+// Locked down: only staff (doctor/admin) may create notifications, and the
+// sender is bound to the authenticated caller — previously ANY user could forge
+// a notification to anyone with an arbitrary sender identity.
+router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
   try {
     const {
       receiver_id,
       receiver_type,
-      sender_id,
-      sender_type,
       sender_name,
       message,
       title,
@@ -154,8 +191,8 @@ router.post('/', async (req, res) => {
     const notification = new Notification({
       receiver_id: receiver_id || (receiver_type === 'Doctor' ? doctor_id : patient_id),
       receiver_type,
-      sender_id,
-      sender_type,
+      sender_id: req.user.id,
+      sender_type: req.user.role === 'doctor' ? 'Doctor' : 'Admin',
       sender_name,
       message,
       title: title || 'Notification',
@@ -186,10 +223,9 @@ router.post('/', async (req, res) => {
 });
 
 // Get all notifications for a patient (using new receiver-based approach)
-router.get('/patient/:patientId', async (req, res) => {
+router.get('/patient/:patientId', ownPatient, async (req, res) => {
   try {
     const { patientId } = req.params;
-    const { limit = 50 } = req.query;
 
     // Query using new receiver_id field (for new notifications)
     // Also include legacy patient_id field (for backward compatibility)
@@ -202,7 +238,7 @@ router.get('/patient/:patientId', async (req, res) => {
       .populate('sender_id', 'full_name last_name email')
       .populate('doctor_id', 'full_name last_name specialization')
       .sort({ created_at: -1 })
-      .limit(parseInt(limit));
+      .limit(clampLimit(req.query.limit));
 
     res.json({
       success: true,
@@ -219,7 +255,7 @@ router.get('/patient/:patientId', async (req, res) => {
 });
 
 // Get unread notification count for patient
-router.get('/patient/unread/:patientId', async (req, res) => {
+router.get('/patient/unread/:patientId', ownPatient, async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -245,7 +281,7 @@ router.get('/patient/unread/:patientId', async (req, res) => {
 });
 
 // Mark all notifications as read for a patient
-router.put('/patient/:patientId/read-all', async (req, res) => {
+router.put('/patient/:patientId/read-all', ownPatient, async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -274,18 +310,11 @@ router.put('/patient/:patientId/read-all', async (req, res) => {
 });
 
 // Delete a notification
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', loadOwnNotification, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const notification = await Notification.findByIdAndDelete(id);
-
-    if (!notification) {
-      return res.status(404).json({
-        success: false,
-        message: 'Notification not found'
-      });
-    }
+    await Notification.findByIdAndDelete(id);
 
     res.json({
       success: true,

@@ -32,6 +32,8 @@ const doctorSchema = new mongoose.Schema({
   end_time: { type: String },
   clinic_name: { type: String },
   clinic_address: { type: String },
+  latitude: { type: Number },
+  longitude: { type: Number },
   cert_docs: { type: String }, // File path
   profile_picture: { type: String, default: '' }, // File path
   availability_schedule: [availabilitySlotSchema],
@@ -45,6 +47,7 @@ const doctorSchema = new mongoose.Schema({
   otp: { type: String, default: null },
   otp_hash: { type: String, default: null },
   otp_created_at: { type: Date, default: null },
+  otp_attempts: { type: Number, default: 0 },
   registration_date: { type: Date, default: Date.now },
   created_at: { type: Date, default: Date.now },
 });

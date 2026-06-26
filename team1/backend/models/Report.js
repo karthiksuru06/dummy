@@ -14,6 +14,11 @@ const reportSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Cloudinary public_id, stored so the asset can be deleted from Cloudinary
+  // later. Optional for backward compatibility with legacy disk-stored reports.
+  cloudinaryPublicId: {
+    type: String
+  },
   fileType: {
     type: String,
     required: true

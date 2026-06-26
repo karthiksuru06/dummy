@@ -209,6 +209,13 @@ router.post('/', async (req, res) => {
     });
     await patientConfirmation.save();
 
+    // Emit Socket.io events for real-time notifications
+    const io = req.app.get('io');
+    if (io) {
+      io.to(String(doctor_id)).emit('notification:new', doctorNotification);
+      io.to(String(patient_id)).emit('notification:new', patientConfirmation);
+    }
+
     // Create task for doctor to approve appointment
     const task = new Task({
       doctor_id,
@@ -473,6 +480,19 @@ router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDo
     // whenever approve was called without them.
     if (meeting_link !== undefined) appointment.meeting_link = meeting_link;
     if (meeting_notes !== undefined) appointment.meeting_notes = meeting_notes;
+    
+    // Auto-attach clinic location for offline consultations
+    const isOffline = appointment.service_type === 'In-Person Consultation';
+    if (isOffline) {
+      const doctor = await Doctor.findById(appointment.doctor_id);
+      if (doctor) {
+        appointment.clinic_name = doctor.clinic_name || '';
+        appointment.clinic_address = doctor.clinic_address || '';
+        appointment.latitude = doctor.latitude || null;
+        appointment.longitude = doctor.longitude || null;
+      }
+    }
+    
     await appointment.save();
 
     // Get doctor information for the patient task
@@ -486,7 +506,6 @@ router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDo
     );
 
     // Create notification for patient (approval) - RECEIVER: Patient, SENDER: Doctor
-    const isOffline = appointment.service_type === 'In-Person Consultation';
     const clinicDetails = isOffline && doctor
       ? ` at ${doctor.clinic_name || 'clinic'} (${doctor.clinic_address || 'clinic address'})`
       : '';
@@ -512,6 +531,12 @@ router.post('/:id/approve', validateObjectIdParam('id'), loadAppointment, apptDo
       patient_name: appointment.patient_name
     });
     await patientNotification.save();
+
+    // Emit Socket.io events for real-time notifications
+    const io = req.app.get('io');
+    if (io) {
+      io.to(String(appointment.patient_id)).emit('notification:new', patientNotification);
+    }
 
     // Mark the doctor's approval task as completed
     await Task.findOneAndUpdate(
@@ -630,6 +655,12 @@ router.post('/:id/reject', validateObjectIdParam('id'), loadAppointment, apptDoc
     });
     await patientNotification.save();
 
+    // Emit Socket.io events for real-time notifications
+    const io = req.app.get('io');
+    if (io) {
+      io.to(String(appointment.patient_id)).emit('notification:new', patientNotification);
+    }
+
     // Update related task to completed
     await Task.findOneAndUpdate(
       { related_appointment_id: id, task_type: 'appointment_approval' },
@@ -699,6 +730,12 @@ router.put('/:id/reschedule', validateObjectIdParam('id'), loadAppointment, appt
       patient_name: appointment.patient_name
     });
     await patientNotification.save();
+
+    // Emit Socket.io events for real-time notifications
+    const io = req.app.get('io');
+    if (io) {
+      io.to(String(appointment.patient_id)).emit('notification:new', patientNotification);
+    }
 
     res.json({
       success: true,

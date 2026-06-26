@@ -46,6 +46,20 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  clinic_name: {
+    type: String,
+    default: ''
+  },
+  clinic_address: {
+    type: String,
+    default: ''
+  },
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
+  },
   cancellation_reason: {
     type: String,
     default: ''

@@ -11,16 +11,18 @@
   --c-navy-900: #0B264C; /* deepest — headers, primary surfaces */
   --c-navy-800: #143a6b;
   --c-blue-700: #1E4270;
+  --c-blue-650: #234E82; /* primary-dark / hover (matches brand.700) */
   --c-blue-600: #2C5F9F; /* primary action */
   --c-blue-500: #3b78c4;
   --c-blue-200: #B9D0EC;
   --c-blue-100: #E0E9F8; /* tint backgrounds */
   --c-blue-50:  #F2F7FD;
 
-  /* ---- Accent: clinical teal = vitality/health (one accent only) ---- */
-  --c-teal-600: #0E8C8C;
-  --c-teal-500: #14B8A6;
-  --c-teal-100: #D7F2EE;
+  /* ---- Accent: clinical teal/green = vitality/health (one accent only) ----
+     #0FB5A6 is the green used product-wide (admin/doctor/premium + tailwind). */
+  --c-teal-600: #0B8C82;
+  --c-teal-500: #0FB5A6; /* canonical accent green */
+  --c-teal-100: #C9F0EA;
 
   /* ---- Semantic / status ---- */
   --c-success: #1f9d62;
@@ -41,11 +43,12 @@
   --c-canvas:     #fbfbfb;
 
   /* ---- Semantic roles (use these in components) ---- */
-  --color-primary: var(--c-blue-600);
-  --color-primary-hover: var(--c-blue-700);
-  --color-primary-tint: var(--c-blue-100);
+  --color-primary: var(--c-blue-600);       /* #2C5F9F brand blue */
+  --color-primary-hover: var(--c-blue-650); /* #234E82 darker on hover */
+  --color-primary-dark: var(--c-navy-900);  /* #0B264C deepest navy */
+  --color-primary-tint: var(--c-blue-100);  /* #E0E9F8 light blue */
   --color-on-primary: #ffffff;
-  --color-accent: var(--c-teal-500);
+  --color-accent: var(--c-teal-500);        /* #0FB5A6 vitality green */
   --color-bg: var(--c-canvas);
   --color-text: var(--c-ink);
   --color-text-soft: var(--c-ink-soft);

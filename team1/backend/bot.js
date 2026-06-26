@@ -11,7 +11,7 @@
  *
  * Response shape:
  * {
- *   type:       "repeat" | "followup" | "final"
+ *   type:       "repeat" | "followup" | "final" | "command"
  *   text:       string
  *   severity:   "Neutral" | "Moderate" | "Critical"
  *   certainty: number (0..1)
@@ -19,6 +19,7 @@
  *   reasons:    string[]
  *   actions:    string[]
  *   isRepeat:   boolean
+ *   command:    string (only for type: "command")
  * }
  */
 
@@ -33,12 +34,28 @@ const {
   detectContradictions,
 } = require("./services/ai");
 const ChatHistory = require("./models/ChatHistory");
+const { redis, isRedisEnabled } = require("./utils/redis");
 
 /* ------------------------------------------------------------------ */
 const MAX_QUESTIONS = 3;
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
+// In-memory fallback store (used only when Redis is disabled).
 const conversations = {};
+
+const CONVO_KEY = (userId) => `chat:convo:${userId}`;
+
+function defaultConvo() {
+  return {
+    state: "WAITING_FOR_PROBLEM",
+    history: [],
+    questionsAsked: [],
+    extractedDetails: { symptom: "", severity: "Neutral", duration: "", frequency: "" },
+    symptomHistory: [],
+    lastActivity: Date.now(),
+    finalResult: null,
+  };
+}
 
 const WELCOME_MSG =
   "Hi, I am MEDviz. Please tell me what you are facing.";
@@ -129,7 +146,31 @@ function extractSymptomDetails(message) {
 /* ------------------------------------------------------------------ */
 /*  Session management                                                  */
 /* ------------------------------------------------------------------ */
-function getOrCreateConvo(userId) {
+async function getOrCreateConvo(userId) {
+  if (isRedisEnabled && redis) {
+    // Redis-backed store: the JSON is the source of truth. TTL on the key
+    // handles expiry, but we still honor the inactivity timeout explicitly so
+    // a stale-but-not-yet-expired value is reset to a fresh conversation.
+    let convo = null;
+    try {
+      const raw = await redis.get(CONVO_KEY(userId));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const elapsed = Date.now() - (parsed.lastActivity || 0);
+        if (elapsed <= SESSION_TIMEOUT_MS) {
+          convo = parsed;
+        }
+      }
+    } catch (_) {
+      // Treat any read/parse failure as "no conversation".
+      convo = null;
+    }
+    if (!convo) convo = defaultConvo();
+    convo.lastActivity = Date.now();
+    return convo;
+  }
+
+  // In-memory fallback (unchanged behavior).
   if (conversations[userId]) {
     const elapsed = Date.now() - (conversations[userId].lastActivity || 0);
     if (elapsed > SESSION_TIMEOUT_MS) {
@@ -138,22 +179,36 @@ function getOrCreateConvo(userId) {
   }
 
   if (!conversations[userId]) {
-    conversations[userId] = {
-      state: "WAITING_FOR_PROBLEM",
-      history: [],
-      questionsAsked: [],
-      extractedDetails: { symptom: "", severity: "Neutral", duration: "", frequency: "" },
-      symptomHistory: [],
-      lastActivity: Date.now(),
-      finalResult: null,
-    };
+    conversations[userId] = defaultConvo();
   }
 
   conversations[userId].lastActivity = Date.now();
   return conversations[userId];
 }
 
-function resetConversation(userId) {
+async function persistConvo(userId, convo) {
+  if (!convo) return;
+  convo.lastActivity = Date.now();
+  if (isRedisEnabled && redis) {
+    try {
+      await redis.set(CONVO_KEY(userId), JSON.stringify(convo), "PX", SESSION_TIMEOUT_MS);
+    } catch (_) {
+      // Best-effort persistence; never throw out of the handler.
+    }
+    return;
+  }
+  // In-memory fallback.
+  conversations[userId] = convo;
+}
+
+async function resetConversation(userId) {
+  if (isRedisEnabled && redis) {
+    try {
+      await redis.del(CONVO_KEY(userId));
+    } catch (_) {
+      // ignore
+    }
+  }
   delete conversations[userId];
 }
 
@@ -211,8 +266,17 @@ function runScoringEngine(convo) {
 /*  Main handler                                                        */
 /* ------------------------------------------------------------------ */
 async function handleMessage(userId, message) {
-  const convo = getOrCreateConvo(userId);
+  // Load (or create) the conversation, run the state machine, and ALWAYS
+  // persist the mutated convo on every return path via the finally block.
+  const convo = await getOrCreateConvo(userId);
+  try {
+    return await _handleMessage(userId, convo, message);
+  } finally {
+    await persistConvo(userId, convo);
+  }
+}
 
+async function _handleMessage(userId, convo, message) {
   /* ============================================================
      Item 6: Conversation locking — once FINAL, no more processing
   ============================================================ */
@@ -229,6 +293,29 @@ async function handleMessage(userId, message) {
       reasons: [],
       actions: [],
       isRepeat: true,
+    };
+  }
+
+  // ---------- Command Handling ----------
+  const upperMessage = message.trim().toUpperCase();
+  const commands = [
+    "BOOK_APPOINTMENT", "CANCEL_APPOINTMENT", "RESCHEDULE_APPOINTMENT",
+    "VIEW_APPOINTMENTS", "VIEW_REPORTS", "DOWNLOAD_REPORT",
+    "SHOW_AVAILABLE_DOCTORS", "SHOW_NOTIFICATIONS", "VIEW_PROFILE", "UPDATE_PROFILE"
+  ];
+  
+  const matchedCommand = commands.find(cmd => upperMessage.includes(cmd));
+  if (matchedCommand) {
+    return {
+      type: "command",
+      command: matchedCommand,
+      text: `I understand you want to ${matchedCommand.replace(/_/g, ' ').toLowerCase()}. I can help you with that.`,
+      severity: "Neutral",
+      certainty: 1,
+      score: 0,
+      reasons: ["command detected"],
+      actions: [matchedCommand],
+      isRepeat: false,
     };
   }
 
@@ -479,14 +566,18 @@ function makeFinal(result) {
 /* ------------------------------------------------------------------ */
 /*  Periodic cleanup for stale conversations                           */
 /* ------------------------------------------------------------------ */
-setInterval(() => {
-  const now = Date.now();
-  for (const userId of Object.keys(conversations)) {
-    if (now - (conversations[userId].lastActivity || 0) > SESSION_TIMEOUT_MS) {
-      delete conversations[userId];
+// Only needed for the in-memory store. When Redis is enabled, the per-key
+// PX TTL handles expiry for us, so the sweeper is skipped.
+if (!isRedisEnabled) {
+  setInterval(() => {
+    const now = Date.now();
+    for (const userId of Object.keys(conversations)) {
+      if (now - (conversations[userId].lastActivity || 0) > SESSION_TIMEOUT_MS) {
+        delete conversations[userId];
+      }
     }
-  }
-}, SESSION_TIMEOUT_MS);
+  }, SESSION_TIMEOUT_MS);
+}
 
 /* ------------------------------------------------------------------ */
 module.exports = { handleMessage, resetConversation, markChatCompleted };

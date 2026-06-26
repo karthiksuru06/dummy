@@ -1,8 +1,26 @@
+const crypto = require('crypto');
 const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const { sendEmail } = require('../utils/email');
+const { redis, isRedisEnabled } = require('../utils/redis');
+
+// Unique per-process id so we can tell which instance holds the leader lock.
+const INSTANCE_ID = crypto.randomBytes(8).toString('hex');
+
+// Try to acquire a short-lived leader lock so that with N instances running,
+// only one sends alerts each tick (prevents duplicate notifications/emails).
+// Returns true when Redis is disabled (single-instance assumption).
+async function acquireLock(jobName, ttlMs) {
+  if (!isRedisEnabled || !redis) return true;
+  try {
+    const res = await redis.set(`cron:lock:${jobName}`, INSTANCE_ID, 'NX', 'PX', ttlMs);
+    return res === 'OK';
+  } catch (_) {
+    return false;
+  }
+}
 
 // Best-effort reminder email for an alert tier. Never throws.
 const sendAlertEmail = async (patientId, subject, text) => {
@@ -206,11 +224,20 @@ const startAppointmentAlertJob = () => {
     clearInterval(alertIntervalId);
   }
 
+  // ~90% of the interval so the lock expires before the next tick.
+  const LOCK_TTL_MS = Math.floor(ALERT_INTERVAL_MS * 0.9);
+
+  const tick = async () => {
+    if (await acquireLock('appointmentAlerts', LOCK_TTL_MS)) {
+      await sendAppointmentAlerts();
+    }
+  };
+
   // Run immediately on startup
-  sendAppointmentAlerts();
+  tick();
 
   alertIntervalId = setInterval(() => {
-    sendAppointmentAlerts();
+    tick();
   }, ALERT_INTERVAL_MS);
 
   console.log(`Appointment alert scheduler started (runs every ${ALERT_INTERVAL_MS / 60000} minutes)`);

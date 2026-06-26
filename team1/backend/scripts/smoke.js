@@ -71,6 +71,54 @@ function check(name, cond, detail) {
   const browse = await req(port, 'GET', '/api/doctors/available', { token });
   check('GET /api/doctors/available -> 200 (returns array)', browse.status === 200 && browse.body.trim().startsWith('['), `got ${browse.status}`);
 
+  // ---- Full patient journey over real HTTP ----
+  const email = `journey${Date.now()}@t.local`;
+  const password = 'Secret123';
+
+  // 6. Registration REQUIRES explicit consent (PHI compliance)
+  const noConsent = await req(port, 'POST', '/api/auth/patients/register', { body: {
+    full_name: 'Jo', last_name: 'Journey', email, phone: '5551230000', password,
+    dob: '1992-05-05', gender: 'female', address: '9 Way', emergency_contact: '5559998888', blood_group: 'A+',
+  } });
+  check('register without consent -> 400 (consent mandatory)', noConsent.status === 400, `got ${noConsent.status}`);
+
+  // 7. Registration WITH consent succeeds
+  const reg = await req(port, 'POST', '/api/auth/patients/register', { body: {
+    full_name: 'Jo', last_name: 'Journey', email, phone: '5551230000', password,
+    dob: '1992-05-05', gender: 'female', address: '9 Way', emergency_contact: '5559998888', blood_group: 'A+',
+    agreed_terms: 'true', consent_version: '1.0',
+  } });
+  check('register with consent -> 201', reg.status === 201, `got ${reg.status} ${reg.body}`);
+
+  // 8. Login returns a usable JWT
+  const login = await req(port, 'POST', '/api/auth/patients/login', { body: { email, password } });
+  const loginBody = (() => { try { return JSON.parse(login.body); } catch { return {}; } })();
+  check('login -> 200 with token', login.status === 200 && !!loginBody.token, `got ${login.status}`);
+  const jToken = loginBody.token;
+  const jId = loginBody.user && loginBody.user._id;
+
+  // 9. Authenticated self profile
+  const profile = await req(port, 'GET', '/api/patient/profile', { token: jToken });
+  check('GET /api/patient/profile (self) -> 200', profile.status === 200, `got ${profile.status}`);
+
+  // 10. Book an appointment with the seeded doctor
+  const book = await req(port, 'POST', '/api/appointments/book', { token: jToken, body: {
+    doctorId: String(doctor._id), consultationType: 'Video Consultation',
+    date: new Date(Date.now() + 2 * 86400000).toISOString(), time: '2:30 PM', reason: 'checkup',
+  } });
+  check('POST /api/appointments/book -> 201', book.status === 201, `got ${book.status} ${book.body}`);
+
+  // 11. Chatbot responds (degrades gracefully without GEMINI_API_KEY)
+  const chat = await req(port, 'POST', '/api/chat', { token: jToken, body: { message: 'I have a severe headache for 3 days' } });
+  const chatBody = (() => { try { return JSON.parse(chat.body); } catch { return {}; } })();
+  check('POST /api/chat -> 200 with reply', chat.status === 200 && !!chatBody.reply, `got ${chat.status}`);
+
+  // 12. Patient reads ONLY their own notifications
+  const notif = await req(port, 'GET', `/api/notifications/patient/${jId}`, { token: jToken });
+  check('GET own notifications -> 200', notif.status === 200, `got ${notif.status}`);
+  const notifOther = await req(port, 'GET', `/api/notifications/patient/${new mongoose.Types.ObjectId()}`, { token: jToken });
+  check('GET another patient notifications -> 403', notifOther.status === 403, `got ${notifOther.status}`);
+
   console.log(`\nResult: ${pass} passed, ${fail} failed\n`);
   await mongoose.disconnect();
   await mongo.stop();

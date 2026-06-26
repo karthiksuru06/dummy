@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../../api/axiosConfig';
 import Header from '../PatientHeader/Header';
 import BackButton from '../../common/BackButton/BackButton';
+import { io } from 'socket.io-client';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -10,16 +11,48 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
+  const socketRef = useRef(null);
 
   useEffect(() => {
     fetchNotifications();
 
-    // Auto-refresh every 15 seconds
+    // Set up Socket.io connection
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = userData.id || userData._id;
+    
+    if (userId) {
+      socketRef.current = io(process.env.REACT_APP_API_BASE, {
+        auth: {
+          token: localStorage.getItem('token')
+        }
+      });
+
+      socketRef.current.on('connect', () => {
+        console.log('Socket connected');
+        socketRef.current.emit('join', userId);
+      });
+
+      socketRef.current.on('notification:new', (newNotification) => {
+        console.log('New notification received:', newNotification);
+        setNotifications(prev => [newNotification, ...prev]);
+      });
+
+      socketRef.current.on('disconnect', () => {
+        console.log('Socket disconnected');
+      });
+    }
+
+    // Auto-refresh every 15 seconds as fallback
     const intervalId = setInterval(() => {
       fetchNotifications();
     }, 15000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
   }, []);
 
   const fetchNotifications = async () => {

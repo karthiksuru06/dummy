@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
 const Admin = require('../models/Admin');
@@ -11,7 +11,6 @@ const { generateOTP, hashOTP, verifyOTP, sendOTPEmail, isOTPExpired } = require(
 
 const router = express.Router();
 
-// Configure multer for file uploads
 const crypto = require('crypto');
 
 const ACCESS_TOKEN_TTL = '15m';
@@ -31,18 +30,41 @@ async function issueRefreshToken(userId, role) {
   return token;
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    // Random, collision-free name (was Date.now(), which collides under
-    // concurrency and produces guessable URLs).
-    cb(null, `${crypto.randomUUID()}${path.extname(file.originalname)}`);
-  }
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Restrict type + size on the public registration upload (was unrestricted).
+// Helper function to upload to Cloudinary.
+//
+// PHI files (patient medical_reports, doctor cert_docs / credential docs) are
+// uploaded with delivery type 'authenticated' (private) rather than the default
+// public 'upload'. An authenticated asset is NOT served from its canonical
+// public URL — it can only be reached via a server-signed, time-limited
+// delivery URL. This gives true per-request access control over PHI.
+const uploadToCloudinary = async (file) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'medviz_uploads',
+        resource_type: 'auto',
+        type: 'authenticated',
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+    uploadStream.end(file.buffer);
+  });
+};
+
+// Use memory storage for Cloudinary uploads
+const storage = multer.memoryStorage();
+
+// Restrict type + size on the public registration upload
 const ALLOWED = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 const upload = multer({
   storage,
@@ -63,6 +85,12 @@ router.post('/patients/register', upload.single('medical_reports'), async (req, 
       return res.status(400).json({ message: 'All required fields must be provided' });
     }
 
+    // Explicit informed consent is mandatory for PHI handling.
+    const hasConsent = agreed_terms === 'true' || agreed_terms === true;
+    if (!hasConsent) {
+      return res.status(400).json({ message: 'You must accept the privacy policy and terms to register' });
+    }
+
     // Check if patient already exists
     const existingPatient = await Patient.findOne({ email });
     if (existingPatient) {
@@ -71,6 +99,12 @@ router.post('/patients/register', upload.single('medical_reports'), async (req, 
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Upload to Cloudinary if file exists
+    let medicalReportsUrl = null;
+    if (req.file) {
+      medicalReportsUrl = await uploadToCloudinary(req.file);
+    }
 
     // Create patient
     const patient = new Patient({
@@ -86,11 +120,13 @@ router.post('/patients/register', upload.single('medical_reports'), async (req, 
       blood_group,
       medical_history,
       current_medications,
-      medical_reports: req.file ? req.file.path : null,
+      medical_reports: medicalReportsUrl,
       height,
       weight,
       bpm,
-      agreed_terms: agreed_terms === 'true' || agreed_terms === true,
+      agreed_terms: hasConsent,
+      consent_version: req.body.consent_version || '1.0',
+      consented_at: new Date(),
     });
 
     await patient.save();
@@ -130,6 +166,12 @@ router.post('/doctors/register', upload.single('cert_docs'), async (req, res) =>
       }
     }
 
+    // Upload to Cloudinary if file exists
+    let certDocsUrl = null;
+    if (req.file) {
+      certDocsUrl = await uploadToCloudinary(req.file);
+    }
+
     // Create doctor
     const doctor = new Doctor({
       full_name,
@@ -147,7 +189,7 @@ router.post('/doctors/register', upload.single('cert_docs'), async (req, res) =>
       end_time,
       clinic_name,
       clinic_address,
-      cert_docs: req.file ? req.file.path : null,
+      cert_docs: certDocsUrl,
       availability_schedule: parsedAvailability,
       agreed_terms: agreed_terms === 'true' || agreed_terms === true,
     });
@@ -170,7 +212,7 @@ router.post('/patients/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find patient
-    const patient = await Patient.findOne({ email });
+    const patient = await Patient.findOne({ email: String(email) });
     if (!patient) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
@@ -211,7 +253,7 @@ router.post('/doctors/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find doctor
-    const doctor = await Doctor.findOne({ email });
+    const doctor = await Doctor.findOne({ email: String(email) });
     if (!doctor) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
@@ -289,7 +331,7 @@ router.post('/admin/login', async (req, res) => {
     }
 
     // Find admin
-    const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({ email: String(email) });
     if (!admin) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
@@ -375,21 +417,29 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    // Check if user exists in any of the three collections
+    // Generic response used in every branch so an attacker cannot enumerate
+    // which emails are registered (account-enumeration defense).
+    const genericResponse = {
+      message: 'If an account exists for that email, a reset code has been sent.',
+    };
+
+    // Check if user exists in any of the three collections. String(email)
+    // neutralizes NoSQL operator injection like { "$gt": "" }.
+    const safeEmail = String(email);
     let user = null;
     let userType = null;
 
-    const patient = await Patient.findOne({ email });
+    const patient = await Patient.findOne({ email: safeEmail });
     if (patient) {
       user = patient;
       userType = 'patient';
     } else {
-      const doctor = await Doctor.findOne({ email });
+      const doctor = await Doctor.findOne({ email: safeEmail });
       if (doctor) {
         user = doctor;
         userType = 'doctor';
       } else {
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ email: safeEmail });
         if (admin) {
           user = admin;
           userType = 'admin';
@@ -397,43 +447,34 @@ router.post('/forgot-password', async (req, res) => {
       }
     }
 
+    // Always return the same response whether or not the user exists.
     if (!user) {
-      return res.status(404).json({ message: 'No user found with this email' });
+      return res.status(200).json(genericResponse);
     }
 
     // Generate OTP
     const otp = generateOTP();
     const otpHash = hashOTP(otp);
 
-    // Save OTP to user document
+    // Save OTP (+ reset attempt counter) to user document
     user.otp_hash = otpHash;
     user.otp_created_at = new Date();
+    user.otp_attempts = 0;
     await user.save();
 
-    // Send OTP via email (best effort - doesn't fail the request if email is not configured)
+    // Send OTP via email. In production sendOTPEmail throws if email is not
+    // configured (never leaks the OTP to logs/response). Surface a 500 in that
+    // case rather than a misleading success.
     try {
-      await sendOTPEmail(email, otp, userType);
-      res.status(200).json({
-        message: 'OTP sent successfully to your email',
-        email: email,
-        userType: userType,
-        testMode: false
-      });
+      await sendOTPEmail(safeEmail, otp, userType);
     } catch (emailError) {
-      console.warn('Email not sent (test mode):', emailError.message);
-      // In test mode, we still return success but indicate it's in test mode
-      // OTP is printed to console for testing
-      res.status(200).json({
-        message: 'OTP request processed. Check console for OTP in test mode.',
-        email: email,
-        userType: userType,
-        testMode: true,
-        note: 'Email service not configured. Check backend console for OTP.'
-      });
+      console.error('Forgot password: failed to send OTP email:', emailError.message);
+      return res.status(500).json({ message: 'Unable to send reset code. Please try again later.' });
     }
+    return res.status(200).json(genericResponse);
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Server error: ' + error.message });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -446,21 +487,22 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email and OTP are required' });
     }
 
-    // Find user in any collection
+    // Find user in any collection. String(email) neutralizes NoSQL injection.
+    const safeEmail = String(email);
     let user = null;
     let userType = null;
 
-    const patient = await Patient.findOne({ email });
+    const patient = await Patient.findOne({ email: safeEmail });
     if (patient) {
       user = patient;
       userType = 'patient';
     } else {
-      const doctor = await Doctor.findOne({ email });
+      const doctor = await Doctor.findOne({ email: safeEmail });
       if (doctor) {
         user = doctor;
         userType = 'doctor';
       } else {
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ email: safeEmail });
         if (admin) {
           user = admin;
           userType = 'admin';
@@ -468,25 +510,37 @@ router.post('/verify-otp', async (req, res) => {
       }
     }
 
-    if (!user) {
-      return res.status(404).json({ message: 'No user found with this email' });
-    }
-
-    if (!user.otp_hash || !user.otp_created_at) {
-      return res.status(400).json({ message: 'No OTP request found. Please request OTP first' });
+    // Generic 400 for both "no user" and "no OTP" so neither account existence
+    // nor reset state can be enumerated.
+    const invalidMsg = { message: 'Invalid or expired code. Please request a new one.' };
+    if (!user || !user.otp_hash || !user.otp_created_at) {
+      return res.status(400).json(invalidMsg);
     }
 
     // Check if OTP has expired
     if (isOTPExpired(user.otp_created_at)) {
       user.otp_hash = null;
       user.otp_created_at = null;
+      user.otp_attempts = 0;
       await user.save();
-      return res.status(400).json({ message: 'OTP has expired. Please request a new one' });
+      return res.status(400).json(invalidMsg);
     }
 
-    // Verify OTP
+    // Brute-force protection: invalidate the OTP after too many wrong tries.
+    const MAX_OTP_ATTEMPTS = 5;
+    if ((user.otp_attempts || 0) >= MAX_OTP_ATTEMPTS) {
+      user.otp_hash = null;
+      user.otp_created_at = null;
+      user.otp_attempts = 0;
+      await user.save();
+      return res.status(400).json(invalidMsg);
+    }
+
+    // Verify OTP (constant-time inside verifyOTP)
     if (!verifyOTP(otp, user.otp_hash)) {
-      return res.status(400).json({ message: 'Invalid OTP' });
+      user.otp_attempts = (user.otp_attempts || 0) + 1;
+      await user.save();
+      return res.status(400).json(invalidMsg);
     }
 
     // Generate temporary token for password reset
@@ -526,8 +580,8 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    if (typeof newPassword !== 'string' || newPassword.length < 8 || !/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters and include a letter and a number' });
     }
 
     // Verify reset token
@@ -543,14 +597,15 @@ router.post('/reset-password', async (req, res) => {
       return res.status(401).json({ message: 'Invalid token type' });
     }
 
-    // Find user
+    // Find user by the id bound into the verified reset token (not the body),
+    // so the lookup cannot be steered by client input.
     let user = null;
     if (decoded.userType === 'patient') {
-      user = await Patient.findOne({ email });
+      user = await Patient.findById(decoded.id);
     } else if (decoded.userType === 'doctor') {
-      user = await Doctor.findOne({ email });
+      user = await Doctor.findById(decoded.id);
     } else if (decoded.userType === 'admin') {
-      user = await Admin.findOne({ email });
+      user = await Admin.findById(decoded.id);
     }
 
     if (!user) {

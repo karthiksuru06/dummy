@@ -14,6 +14,17 @@ const ACTION_DEFS = {
   "Monitor Symptoms": { label: "Monitor Symptoms", route: null },
   "Call Emergency Services": { label: "Call Emergency Services", tel: "112" },
   "Go to Nearest Hospital": { label: "Go to Nearest Hospital", route: "/patient/finddoctors" },
+  // New Chatbot Commands
+  "BOOK_APPOINTMENT": { label: "Book Appointment", route: "/patient/finddoctors" },
+  "CANCEL_APPOINTMENT": { label: "Cancel Appointment", route: "/patient/appointments" },
+  "RESCHEDULE_APPOINTMENT": { label: "Reschedule Appointment", route: "/patient/appointments" },
+  "VIEW_APPOINTMENTS": { label: "View Appointments", route: "/patient/appointments" },
+  "VIEW_REPORTS": { label: "View Reports", route: "/patient/reports" },
+  "DOWNLOAD_REPORT": { label: "Download Report", route: "/patient/reports" },
+  "SHOW_AVAILABLE_DOCTORS": { label: "Show Available Doctors", route: "/patient/finddoctors" },
+  "SHOW_NOTIFICATIONS": { label: "Show Notifications", route: "/patient/notifications" },
+  "VIEW_PROFILE": { label: "View Profile", route: "/patient/profile" },
+  "UPDATE_PROFILE": { label: "Update Profile", route: "/patient/profile" },
 };
 
 const WELCOME_TEXT = "Hi, I am MEDviz. Please tell me what you are facing.";
@@ -92,13 +103,15 @@ const Chatbot = () => {
   const inputRef = useRef(null);
   const msgCounter = useRef(1);
 
-  /* ---- persistent userId ---- */
+  /* ---- reset backend conversation on every mount/reload ---- */
+  // The backend keeps triage state keyed by JWT id and LOCKS it once a case
+  // reaches FINAL (for 30 min). A page reload gives us fresh React state with
+  // the input re-enabled, but the backend would still be FINAL and replay the
+  // stale locked result forever. Resetting once on mount guarantees each visit
+  // starts a clean triage. Empty deps → runs once, no loop. Errors are quiet.
   useEffect(() => {
-    if (!localStorage.getItem('medviz_userId')) {
-      localStorage.setItem('medviz_userId', `user_${Date.now()}_${Math.random().toString(36).slice(2)}`);
-    }
+    resetChat().catch((err) => console.error("Mount reset error:", err));
   }, []);
-  const getUserId = () => localStorage.getItem('medviz_userId');
 
   /* ---- auto-scroll ---- */
   useEffect(() => {
@@ -139,7 +152,7 @@ const Chatbot = () => {
   /* ================================================================ */
   const handleNewChat = useCallback(async () => {
     try {
-      await resetChat(getUserId());
+      await resetChat();
     } catch (err) {
       console.error("Reset error:", err);
     }
@@ -175,7 +188,7 @@ const Chatbot = () => {
     setIsSending(true);
 
     try {
-      const data = await postChat({ userId: getUserId(), message: trimmed });
+      const data = await postChat({ message: trimmed });
       const reply = data?.reply;
 
       if (!reply) {
@@ -183,7 +196,15 @@ const Chatbot = () => {
         return;
       }
 
-      const { type, text, severity, actions, isRepeat, certainty, score, reasons } = reply;
+      const { type, text, severity, actions, isRepeat, certainty, score, reasons, command } = reply;
+
+      // If it's a command, we can either navigate immediately or show the button
+      if (type === 'command' && command) {
+        const def = ACTION_DEFS[command];
+        if (def && def.route) {
+          navigate(def.route);
+        }
+      }
 
       if (type === 'repeat' || isRepeat) {
         replaceLastBotMessage(WELCOME_TEXT);
@@ -205,7 +226,7 @@ const Chatbot = () => {
         inputRef.current?.focus();
       }
     }
-  }, [inputMessage, isSending, conversationEnded, addBotMessage, replaceLastBotMessage]);
+  }, [inputMessage, isSending, conversationEnded, addBotMessage, replaceLastBotMessage, navigate]);
 
   /* ---- Enter key ---- */
   const handleKeyDown = (e) => {

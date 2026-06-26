@@ -48,7 +48,7 @@
 .doctor-tab-btn.active {
   background: white;
   color: #2C5F9F;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 4px 12px rgba(44, 95, 159, 0.1); /* brand blue (was indigo) */
 }
 
 .doctor-tab-count {
@@ -61,7 +61,7 @@
 }
 
 .doctor-tab-btn.active .doctor-tab-count {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(44, 95, 159, 0.1); /* brand blue (was indigo) */
   color: #2C5F9F;
 }
 

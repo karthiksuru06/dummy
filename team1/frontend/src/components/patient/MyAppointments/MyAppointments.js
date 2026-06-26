@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import API from '../../../api/axiosConfig';
 import Header from '../PatientHeader/Header';
 import BackButton from '../../common/BackButton/BackButton';
@@ -11,6 +12,7 @@ const MyAppointments = () => {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [, forceUpdate] = useState(0);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
@@ -28,8 +30,8 @@ const MyAppointments = () => {
   }, []);
 
   useEffect(() => {
-    filterAppointmentsByStatus();
-  }, [filterStatus, appointments]);
+    applyFilters();
+  }, [filterStatus, searchQuery, appointments]);
 
   // Update the component every 10 seconds to refresh "last updated" display
   useEffect(() => {
@@ -61,7 +63,6 @@ const MyAppointments = () => {
         // Sort by date (newest first)
         allAppointments.sort((a, b) => new Date(b.appointment_date) - new Date(a.appointment_date));
         setAppointments(allAppointments);
-        setFilteredAppointments(allAppointments);
         setLastUpdated(new Date()); // Update last refresh time
       }
 
@@ -72,13 +73,38 @@ const MyAppointments = () => {
     }
   };
 
-  const filterAppointmentsByStatus = () => {
-    if (filterStatus === 'all') {
-      setFilteredAppointments(appointments);
-    } else {
-      const filtered = appointments.filter(apt => apt.status === filterStatus);
-      setFilteredAppointments(filtered);
+  const applyFilters = () => {
+    let filtered = [...appointments];
+
+    // 1. Status Filter
+    if (filterStatus !== 'all') {
+      if (filterStatus === 'today') {
+        const today = new Date().setHours(0, 0, 0, 0);
+        filtered = filtered.filter(apt => new Date(apt.appointment_date).setHours(0, 0, 0, 0) === today);
+      } else if (filterStatus === 'this_week') {
+        const now = new Date();
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0, 0, 0, 0);
+        const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6)).setHours(23, 59, 59, 999);
+        filtered = filtered.filter(apt => {
+          const aptDate = new Date(apt.appointment_date).getTime();
+          return aptDate >= startOfWeek && aptDate <= endOfWeek;
+        });
+      } else {
+        filtered = filtered.filter(apt => apt.status === filterStatus);
+      }
     }
+
+    // 2. Search Filter (Doctor Name or Service Type)
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(apt => 
+        (apt.doctor_id?.full_name && apt.doctor_id.full_name.toLowerCase().includes(query)) ||
+        (apt.doctor_id?.last_name && apt.doctor_id.last_name.toLowerCase().includes(query)) ||
+        (apt.service_type && apt.service_type.toLowerCase().includes(query))
+      );
+    }
+
+    setFilteredAppointments(filtered);
   };
 
   const getStatusBadgeClass = (status) => {
@@ -118,6 +144,19 @@ const MyAppointments = () => {
   };
 
   const getStatusCount = (status) => {
+    if (status === 'today') {
+      const today = new Date().setHours(0, 0, 0, 0);
+      return appointments.filter(apt => new Date(apt.appointment_date).setHours(0, 0, 0, 0) === today).length;
+    }
+    if (status === 'this_week') {
+      const now = new Date();
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).setHours(0, 0, 0, 0);
+      const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6)).setHours(23, 59, 59, 999);
+      return appointments.filter(apt => {
+        const aptDate = new Date(apt.appointment_date).getTime();
+        return aptDate >= startOfWeek && aptDate <= endOfWeek;
+      }).length;
+    }
     return appointments.filter(apt => apt.status === status).length;
   };
 
@@ -154,7 +193,7 @@ const MyAppointments = () => {
       await fetchAppointments();
     } catch (error) {
       console.error('Error cancelling appointment:', error);
-      alert('Failed to cancel appointment. Please try again.');
+      toast.error('Failed to cancel appointment. Please try again.');
     }
   };
 
@@ -238,38 +277,53 @@ const MyAppointments = () => {
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="filter-tabs">
-          <button
-            className={`filter-tab ${filterStatus === 'all' ? 'active' : ''}`}
-            onClick={() => setFilterStatus('all')}
-          >
-            All ({appointments.length})
-          </button>
-          <button
-            className={`filter-tab ${filterStatus === 'pending' ? 'active' : ''}`}
-            onClick={() => setFilterStatus('pending')}
-          >
-            Pending ({getStatusCount('pending')})
-          </button>
-          <button
-            className={`filter-tab ${filterStatus === 'scheduled' ? 'active' : ''}`}
-            onClick={() => setFilterStatus('scheduled')}
-          >
-            Scheduled ({getStatusCount('scheduled')})
-          </button>
-          <button
-            className={`filter-tab ${filterStatus === 'completed' ? 'active' : ''}`}
-            onClick={() => setFilterStatus('completed')}
-          >
-            Completed ({getStatusCount('completed')})
-          </button>
-          <button
-            className={`filter-tab ${filterStatus === 'cancelled' ? 'active' : ''}`}
-            onClick={() => setFilterStatus('cancelled')}
-          >
-            Cancelled ({getStatusCount('cancelled')})
-          </button>
+        {/* Search and Filter Section */}
+        <div className="filter-section">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by doctor name or service type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="filter-tabs">
+            <button
+              className={`filter-tab ${filterStatus === 'all' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('all')}
+            >
+              All ({appointments.length})
+            </button>
+            <button
+              className={`filter-tab ${filterStatus === 'today' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('today')}
+            >
+              Today ({getStatusCount('today')})
+            </button>
+            <button
+              className={`filter-tab ${filterStatus === 'this_week' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('this_week')}
+            >
+              This Week ({getStatusCount('this_week')})
+            </button>
+            <button
+              className={`filter-tab ${filterStatus === 'scheduled' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('scheduled')}
+            >
+              Upcoming ({getStatusCount('scheduled')})
+            </button>
+            <button
+              className={`filter-tab ${filterStatus === 'completed' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('completed')}
+            >
+              Completed ({getStatusCount('completed')})
+            </button>
+            <button
+              className={`filter-tab ${filterStatus === 'cancelled' ? 'active' : ''}`}
+              onClick={() => setFilterStatus('cancelled')}
+            >
+              Cancelled ({getStatusCount('cancelled')})
+            </button>
+          </div>
         </div>
 
         {/* Appointments List */}
@@ -284,9 +338,9 @@ const MyAppointments = () => {
               <div className="empty-icon"></div>
               <h3>No appointments found</h3>
               <p>
-                {filterStatus === 'all'
+                {filterStatus === 'all' && !searchQuery
                   ? "You haven't booked any appointments yet."
-                  : `No ${filterStatus} appointments.`}
+                  : `No appointments match your current filters or search.`}
               </p>
               <button
                 className="book-appointment-btn"
@@ -330,7 +384,7 @@ const MyAppointments = () => {
                     </div>
                   </div>
 
-                  {appointment.meeting_link && appointment.status === 'scheduled' && (
+                  {appointment.service_type === 'Video Consultation' && appointment.meeting_link && appointment.status === 'scheduled' && (
                     <div className="meeting-link-section">
                       <p className="meeting-label">Meeting Link:</p>
                       <a
@@ -340,6 +394,28 @@ const MyAppointments = () => {
                         className="meeting-link-btn"
                       >
                         Join Meeting
+                      </a>
+                    </div>
+                  )}
+
+                  {appointment.service_type === 'In-Person Consultation' && appointment.status === 'scheduled' && (
+                    <div className="location-section">
+                      <p className="location-label">Clinic Location:</p>
+                      <p className="location-text">
+                        {appointment.clinic_name && <strong>{appointment.clinic_name}</strong>}
+                        {appointment.clinic_address && <>{appointment.clinic_name ? <br /> : ''}{appointment.clinic_address}</>}
+                      </p>
+                      <a
+                        href={
+                          appointment.latitude && appointment.longitude
+                            ? `https://www.google.com/maps/search/?api=1&query=${appointment.latitude},${appointment.longitude}`
+                            : `https://maps.google.com/?q=${encodeURIComponent(appointment.clinic_address || appointment.doctor_id?.clinic_address || '')}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="location-link-btn"
+                      >
+                        Navigate to Clinic
                       </a>
                     </div>
                   )}
@@ -362,12 +438,25 @@ const MyAppointments = () => {
                 <div className="appointment-footer">
                   <div className="appointment-id">ID: {appointment._id}</div>
                   <div className="appointment-actions">
-                    {appointment.status === 'scheduled' && appointment.meeting_link && (
+                    {appointment.status === 'scheduled' && appointment.service_type === 'Video Consultation' && appointment.meeting_link && (
                       <button 
                         className="action-btn primary"
                         onClick={() => window.open(appointment.meeting_link, '_blank')}
                       >
                         Join Consultation
+                      </button>
+                    )}
+                    {appointment.status === 'scheduled' && appointment.service_type === 'In-Person Consultation' && (
+                      <button 
+                        className="action-btn primary"
+                        onClick={() => {
+                          const url = appointment.latitude && appointment.longitude
+                            ? `https://www.google.com/maps/search/?api=1&query=${appointment.latitude},${appointment.longitude}`
+                            : `https://maps.google.com/?q=${encodeURIComponent(appointment.clinic_address || appointment.doctor_id?.clinic_address || '')}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        Navigate to Clinic
                       </button>
                     )}
                     {appointment.status === 'completed' && (

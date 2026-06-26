@@ -2,6 +2,19 @@
 // in server.js (boot). Keeping the app I/O-free makes it importable by the test
 // suite (Supertest + mongodb-memory-server) and is standard production layering.
 
+const Sentry = require('@sentry/node');
+
+// Error tracking is OPTIONAL: it only turns on when SENTRY_DSN is set. When the
+// env var is unset (the case in tests and local dev by default), Sentry stays
+// completely inert — no init, no error handler — so behavior is unchanged.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    tracesSampleRate: 0.1,
+  });
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -42,7 +55,7 @@ if (process.env.NODE_ENV !== 'test') {
     })
   );
 }
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(globalLimiter);
@@ -79,6 +92,15 @@ app.get('/', (req, res) => res.send('MEDviz Backend API'));
 
 // ---- 404 + centralized error handling (must be last) ----
 app.use(notFound);
+
+// Sentry's Express error handler reports errors to Sentry, then falls through to
+// our own handler. Only wired when SENTRY_DSN is set; otherwise inert. It must
+// sit AFTER the routes but BEFORE the centralized errorHandler so our handler
+// still has the final word on the response.
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
 app.use(errorHandler);
 
 module.exports = app;

@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 4px 10px rgba(44, 95, 159, 0.2); /* brand blue (was indigo) */
 }
 
 .dr-nav-logo-box img {
@@ -342,7 +342,7 @@
 }
 
 .dr-mobile-links a.is-active {
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(44, 95, 159, 0.08); /* brand blue (was indigo) */
   color: #2C5F9F;
 }
 

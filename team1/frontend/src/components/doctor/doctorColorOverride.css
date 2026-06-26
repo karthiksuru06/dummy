@@ -1,35 +1,37 @@
 /*
-  DOCTOR DASHBOARD - COLOR ONLY OVERRIDE
-  Only changes colors to: #2C5F9F, #E0E9F8, #0B264C
-  Does NOT change layouts, sizes, or structure
+  DOCTOR DASHBOARD - COLOR ONLY OVERRIDE (patch file)
+  Colors now come from the shared tokens in styles/tokens.css
+  (--color-primary #2C5F9F, --color-primary-tint #E0E9F8,
+   --c-navy-900 #0B264C, --color-primary-hover #234E82).
+  This file no longer hardcodes those hexes — it references the tokens so the
+  doctor portal stays in sync with the single source of truth.
+  Does NOT change layouts, sizes, or structure.
+
+  NOTE: the white-text-on-dark-background rules below KEEP !important on
+  purpose — they override inline component styles / Tailwind utilities to keep
+  text legible on dark navbars and buttons. Removing them risks unreadable
+  text, so they are intentionally retained.
 */
 
-/* Replace ALL generic colors with your blue theme */
-
-/* NOTE: removed a malformed global rule that forced EVERY inline gradient to
-   `linear-gradient(135deg, #0B264C 0%)` (a single color stop is invalid and
-   flattened all intended gradients app-wide). Brand color now lives in
-   tokens.css (--c-navy-900). Headings are no longer globally recolored here —
-   that bled into the patient/admin/landing portals. Scope heading color to
-   the doctor portal instead. */
+/* Headings scoped to the doctor portal (brand navy from tokens). */
 .doctor-navbar h1, .doctor-navbar h2, .doctor-navbar h3,
 .doctor-portal h1, .doctor-portal h2, .doctor-portal h3,
 .doctor-portal h4, .doctor-portal h5, .doctor-portal h6 {
   color: var(--c-navy-900);
 }
 
-/* Replace generic primary colors with medium blue */
+/* Primary buttons — brand blue. Kept !important to win over Tailwind / inline. */
 .btn-primary,
 button[class*="primary"],
 button[class*="approve"],
 button[class*="save"],
 .primary {
-  background-color: #2C5F9F !important;
-  border-color: #2C5F9F !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: white !important;
 }
 
-/* Ensure white text and icons on dark backgrounds */
+/* White icons on dark primary backgrounds (overrides inline styles). */
 .btn-primary svg,
 button[class*="primary"] svg,
 button[class*="approve"] svg,
@@ -44,57 +46,52 @@ button[class*="save"] svg,
   color: white !important;
 }
 
-/* Replace generic secondary colors with light blue */
+/* Secondary buttons — light blue tint. Kept !important to win over Tailwind/inline. */
 .btn-secondary,
 button[class*="secondary"],
 .secondary {
-  background-color: #E0E9F8 !important;
-  border-color: #2C5F9F !important;
-  color: #0B264C !important;
+  background-color: var(--color-primary-tint) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--c-navy-900) !important;
 }
 
-/* Replace generic borders with light blue */
+/* Card borders — light blue tint (redundant !important removed; no Tailwind
+   border utility competes on these generic selectors). */
 .card, .box, div[class*="card"] {
-  border-color: #E0E9F8 !important;
+  border-color: var(--color-primary-tint);
 }
 
-/* Icons tinted blue — scoped to the doctor portal (was a global `svg` rule
-   that recolored icons across every portal). */
+/* Icons tinted blue — scoped to the doctor portal. */
 .doctor-portal .metric-icon svg,
 .doctor-portal .metric-icon svg *,
 .doctor-portal .icon:not(.btn-primary .icon):not(button .icon) {
-  color: #2C5F9F;
+  color: var(--color-primary);
 }
 
-/* Removed global `*:hover { border-color }`, `*:focus { ... }`, and
-   `div[class*=bg] { background }` — they repainted borders/focus rings/
-   backgrounds on every element in the app. Focus is handled accessibly
-   and globally by :focus-visible in tokens.css. */
-
-/* Replace loading spinner colors */
+/* Loading spinner colors (redundant !important removed — no competing rule). */
 .loading-spinner, [class*="spinner"] {
-  border-color: #E0E9F8 !important;
-  border-top-color: #2C5F9F !important;
+  border-color: var(--color-primary-tint);
+  border-top-color: var(--color-primary);
 }
 
-/* Link colors — scoped to the doctor portal (was a global `a !important`
-   that overrode link color in the patient/admin/landing portals too). */
+/* Link colors — scoped to the doctor portal. */
 .doctor-portal a {
-  color: #2C5F9F;
+  color: var(--color-primary);
 }
 .doctor-portal a:hover {
-  color: #234E82;
+  color: var(--color-primary-hover);
 }
 
-/* Replace badge/status colors (keep functional ones like success/danger) */
+/* Badge/status colors (keep functional ones like success/danger).
+   Redundant !important removed — generic badges have no competing utility. */
 .badge:not(.badge-success):not(.badge-danger):not(.badge-warning),
 .status:not([class*="success"]):not([class*="danger"]):not([class*="warning"]) {
-  background-color: #E0E9F8 !important;
-  color: #0B264C !important;
+  background-color: var(--color-primary-tint);
+  color: var(--c-navy-900);
 }
 
-/* CRITICAL: Ensure white text and icons on ALL dark backgrounds */
-/* Dark navbar/header elements */
+/* CRITICAL: white text + icons on dark navbar/header backgrounds.
+   These KEEP !important — they override inline component styles to stay legible. */
 [class*="navbar"],
 [class*="header"][class*="home"],
 .doctor-navbar,
@@ -103,7 +100,6 @@ button[class*="secondary"],
   color: white !important;
 }
 
-/* ALL navbar elements - text and icons must be white */
 .doctor-navbar *,
 .doctor-navbar h1,
 .doctor-navbar h2,
@@ -140,7 +136,7 @@ button[class*="secondary"],
   color: white !important;
 }
 
-/* Dark background buttons and containers */
+/* White text/icons on dark action buttons + metric tiles (override inline styles). */
 [class*="-btn"][style*="background"][style*="#2C5F9F"],
 [class*="-btn"][style*="background"][style*="#0B264C"],
 [class*="-btn"][style*="background"][style*="#234E82"],
@@ -155,7 +151,6 @@ button[class*="secondary"],
   color: white !important;
 }
 
-/* Icons inside dark backgrounds */
 .view-more-btn svg,
 .approve-btn svg,
 .save-btn svg,
@@ -165,7 +160,7 @@ button[class*="secondary"],
   color: white !important;
 }
 
-/* Active sidebar link - dark background needs white text and icons */
+/* Active sidebar link — dark background needs white text + icons. */
 .sidebar-link.active,
 .sidebar-link.active *,
 .sidebar-link.active svg,

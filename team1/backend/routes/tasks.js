@@ -2,9 +2,39 @@ const express = require('express');
 const router = express.Router();
 const Task = require('../models/Task');
 const Prescription = require('../models/Prescription');
+const { requireOwnership } = require('../middleware/auth');
+
+// This router is mounted with `authenticate` (see app.js), so req.user is set.
+// /doctor/:doctorId routes: only the doctor themselves (or admin) may access.
+const ownDoctor = requireOwnership((req) => req.params.doctorId, { allowRoles: ['admin'] });
+// /patient/:patientId routes: the patient themselves, or a doctor/admin.
+const ownPatient = requireOwnership((req) => req.params.patientId);
+
+// Loads the task at :id and authorizes the caller: they must be the task's
+// doctor, the task's patient, or an admin. 403 otherwise. Stashes req.task.
+async function loadOwnTask(req, res, next) {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'Task not found' });
+    }
+    if (req.user.role !== 'admin') {
+      const ownerIds = [task.doctor_id, task.patient_id]
+        .filter(Boolean)
+        .map((id) => String(id));
+      if (!ownerIds.includes(req.user.id)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: not your task' });
+      }
+    }
+    req.task = task;
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
 
 // Get all tasks for a doctor with optional filters
-router.get('/doctor/:doctorId', async (req, res) => {
+router.get('/doctor/:doctorId', ownDoctor, async (req, res) => {
   try {
     const { doctorId } = req.params;
     const { status, priority, task_type } = req.query;
@@ -44,7 +74,7 @@ router.get('/doctor/:doctorId', async (req, res) => {
 });
 
 // Get pending tasks for a doctor
-router.get('/pending/doctor/:doctorId', async (req, res) => {
+router.get('/pending/doctor/:doctorId', ownDoctor, async (req, res) => {
   try {
     const { doctorId } = req.params;
 
@@ -102,7 +132,7 @@ router.get('/pending/doctor/:doctorId', async (req, res) => {
 });
 
 // Get all tasks for a patient
-router.get('/patient/:patientId', async (req, res) => {
+router.get('/patient/:patientId', ownPatient, async (req, res) => {
   try {
     const { patientId } = req.params;
     const { status, priority } = req.query;
@@ -144,7 +174,7 @@ router.get('/patient/:patientId', async (req, res) => {
 });
 
 // Get pending tasks for a patient
-router.get('/pending/patient/:patientId', async (req, res) => {
+router.get('/pending/patient/:patientId', ownPatient, async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -180,22 +210,23 @@ router.get('/pending/patient/:patientId', async (req, res) => {
   }
 });
 
-// Update task status (complete, start, etc.)
-router.post('/:id/:action', async (req, res) => {
+// Update task status (complete, start, etc.).
+// loadOwnTask verifies the caller is the task's doctor/patient (or admin).
+router.post('/:id/:action', loadOwnTask, async (req, res) => {
   try {
-    const { id, action } = req.params;
+    const { action } = req.params;
 
-    let updateData = {};
+    let newStatus;
 
     switch (action) {
       case 'complete':
-        updateData = { status: 'completed' };
+        newStatus = 'completed';
         break;
       case 'start':
-        updateData = { status: 'in_progress' };
+        newStatus = 'in_progress';
         break;
       case 'reopen':
-        updateData = { status: 'pending' };
+        newStatus = 'pending';
         break;
       default:
         return res.status(400).json({
@@ -204,18 +235,9 @@ router.post('/:id/:action', async (req, res) => {
         });
     }
 
-    const task = await Task.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    ).populate('patient_id', 'full_name last_name email phone');
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found'
-      });
-    }
+    req.task.status = newStatus;
+    await req.task.save();
+    const task = await req.task.populate('patient_id', 'full_name last_name email phone');
 
     res.json({
       success: true,
@@ -232,9 +254,17 @@ router.post('/:id/:action', async (req, res) => {
   }
 });
 
-// Create a new task
+// Create a new task. Only staff (doctor/admin) may create tasks; a doctor can
+// only create tasks owned by themselves (doctor_id is forced to req.user.id).
 router.post('/', async (req, res) => {
   try {
+    if (req.user.role !== 'doctor' && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: only staff may create tasks'
+      });
+    }
+
     const {
       doctor_id,
       patient_id,
@@ -248,8 +278,11 @@ router.post('/', async (req, res) => {
       related_appointment_id
     } = req.body;
 
+    // A doctor cannot create tasks under another doctor's id.
+    const effectiveDoctorId = req.user.role === 'doctor' ? req.user.id : doctor_id;
+
     const task = new Task({
-      doctor_id,
+      doctor_id: effectiveDoctorId,
       patient_id,
       patient_name,
       doctor_name,
@@ -278,12 +311,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get task by ID
-router.get('/:id', async (req, res) => {
+// Get task by ID. loadOwnTask verifies the caller owns this task (or is admin).
+router.get('/:id', loadOwnTask, async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const task = await Task.findById(id)
+    const task = await Task.findById(req.params.id)
       .populate('patient_id', 'full_name last_name email phone')
       .populate('doctor_id', 'full_name last_name specialization')
       .populate('related_appointment_id');

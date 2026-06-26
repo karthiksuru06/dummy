@@ -3,13 +3,18 @@
 
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const http = require('http');
+const jwt = require('jsonwebtoken');
+const { Server } = require('socket.io');
 
 dotenv.config();
 
+const { createAdapter } = require('@socket.io/redis-adapter');
+const { isRedisEnabled, createPubSubClient } = require('./utils/redis');
 const logger = require('./utils/logger');
 const app = require('./app');
-const { startAutoCompleteJob } = require('./jobs/appointmentAutoComplete');
-const { startAppointmentAlertJob } = require('./jobs/appointmentAlerts');
+const { startAutoCompleteJob, stopAutoCompleteJob } = require('./jobs/appointmentAutoComplete');
+const { startAppointmentAlertJob, stopAppointmentAlertJob } = require('./jobs/appointmentAlerts');
 
 const PORT = process.env.PORT || 5000;
 
@@ -26,6 +31,14 @@ if (!process.env.MONGODB_URI) {
   logger.error('MONGODB_URI is not set. Refusing to start.');
   process.exit(1);
 }
+if (!process.env.CORS_ORIGIN) {
+  logger.error('CORS_ORIGIN is not set. Refusing to start.');
+  process.exit(1);
+}
+if (!process.env.FRONTEND_URL) {
+  logger.error('FRONTEND_URL is not set. Refusing to start.');
+  process.exit(1);
+}
 
 // ---- DB connection (listen only after a successful connect) ----
 mongoose
@@ -34,11 +47,65 @@ mongoose
     logger.info('MongoDB connected');
     startAutoCompleteJob();
     startAppointmentAlertJob();
-    const server = app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+    
+    const server = http.createServer(app);
+    const io = new Server(server, {
+      cors: {
+        origin: process.env.FRONTEND_URL,
+        methods: ['GET', 'POST']
+      }
+    });
 
-    // ---- Graceful shutdown: drain HTTP, close Mongo ----
+    // ---- Horizontal scaling: when Redis is enabled, attach the Redis adapter
+    // so `io.to(room)` emits fan out to clients connected to OTHER instances.
+    if (isRedisEnabled) {
+      const pubClient = createPubSubClient();
+      const subClient = createPubSubClient();
+      if (pubClient && subClient) {
+        io.adapter(createAdapter(pubClient, subClient));
+        logger.info('Socket.io Redis adapter enabled');
+      }
+    }
+
+    // Make io available to routes
+    app.set('io', io);
+
+    // ---- Socket.io auth: verify the JWT in the handshake, derive the room
+    // from the token (NEVER trust a client-supplied userId). Prevents any
+    // client from joining another user's notification room (PHI leak).
+    io.use((socket, next) => {
+      try {
+        const token =
+          socket.handshake.auth?.token ||
+          (socket.handshake.headers?.authorization || '').replace(/^Bearer /, '');
+        if (!token) return next(new Error('Authentication required'));
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded?.id || !decoded?.role) return next(new Error('Malformed token'));
+        socket.user = { id: String(decoded.id), role: decoded.role };
+        next();
+      } catch (err) {
+        next(new Error('Invalid or expired token'));
+      }
+    });
+
+    io.on('connection', (socket) => {
+      // Auto-join the authenticated user's own room only.
+      socket.join(socket.user.id);
+      logger.info(`Socket connected: ${socket.id} (user ${socket.user.id})`);
+
+      socket.on('disconnect', () => {
+        logger.info(`Socket disconnected: ${socket.id}`);
+      });
+    });
+
+    server.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+
+    // ---- Graceful shutdown: stop jobs, close sockets, drain HTTP, close Mongo ----
     const shutdown = (signal) => {
       logger.info(`${signal} received, shutting down`);
+      try { stopAutoCompleteJob(); } catch (_) {}
+      try { stopAppointmentAlertJob(); } catch (_) {}
+      io.close();
       server.close(() => mongoose.connection.close(false).then(() => process.exit(0)));
       setTimeout(() => process.exit(1), 10000).unref();
     };

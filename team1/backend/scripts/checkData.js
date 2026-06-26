@@ -4,12 +4,11 @@ const Patient = require('../models/Patient');
 const Prescription = require('../models/Prescription');
 require('dotenv').config();
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://MEDviz:MEDviz@123@medviz.a3ppw43.mongodb.net/', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  tlsAllowInvalidCertificates: true,
-  tlsAllowInvalidHostnames: true,
-})
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI is not set. Refusing to run.');
+  process.exit(1);
+}
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('MongoDB connected'))
 .catch(err => {
   console.error('MongoDB connection error:', err);

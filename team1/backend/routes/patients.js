@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Patient = require('../models/Patient');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const Report = require('../models/Report');
 const Task = require('../models/Task');
+const { requireRole, requireOwnership } = require('../middleware/auth');
+const { audit } = require('../middleware/audit');
+
+// This router is mounted with `authenticate` (see app.js), so req.user is always
+// set. Ownership guards below ensure a patient can only touch their OWN id;
+// doctors/admins are allowed through (they have their own scoping rules).
+const ownPatient = requireOwnership((req) => req.params.patientId);
 
 // Helper function to parse appointment time string
 const parseAppointmentTime = (timeString) => {
@@ -76,8 +82,15 @@ const autoCompleteOldAppointments = async (patientId) => {
   }
 };
 
-// Get all patients for a specific doctor
-router.get('/doctor/:doctorId', async (req, res) => {
+// Get all patients for a specific doctor.
+// Only the doctor themselves (or an admin) may list a doctor's patients — a
+// patient must never be able to enumerate another doctor's patient roster.
+router.get(
+  '/doctor/:doctorId',
+  requireRole('doctor', 'admin'),
+  requireOwnership((req) => req.params.doctorId, { allowRoles: ['admin'] }),
+  audit('patient.list.read', 'Patient'),
+  async (req, res) => {
   try {
     const { doctorId } = req.params;
     const { filter } = req.query; // 'all', 'recent', 'chronic'
@@ -175,52 +188,10 @@ router.get('/doctor/:doctorId', async (req, res) => {
 });
 
 // Get authenticated patient's profile (using token)
-router.get('/profile', async (req, res) => {
+router.get('/profile', audit('patient.self.read', 'Patient'), async (req, res) => {
   try {
-    console.log('=== GET /profile called ===');
-
-    // Get token from Authorization header
-    const token = req.headers.authorization?.split(' ')[1];
-    console.log('Token received:', token ? 'Yes' : 'No');
-
-    if (!token) {
-      console.log('No token provided');
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided'
-      });
-    }
-
-    // Verify token and get patient ID
-    let decoded;
-    try {
-      console.log('Verifying token...');
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('Token verified successfully. Patient ID:', decoded.id);
-    } catch (jwtError) {
-      console.log('JWT Error caught:', jwtError.name, jwtError.message);
-      if (jwtError.name === 'TokenExpiredError') {
-        console.log('Returning 401 - Token expired');
-        return res.status(401).json({
-          success: false,
-          message: 'Token has expired. Please login again.',
-          tokenExpired: true
-        });
-      }
-      if (jwtError.name === 'JsonWebTokenError') {
-        console.log('Returning 401 - Invalid token');
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid token. Please login again.',
-          tokenExpired: false
-        });
-      }
-      console.log('Throwing unknown JWT error');
-      throw jwtError;
-    }
-
-    const patientId = decoded.id;
-    console.log('Looking up patient:', patientId);
+    // req.user is set by the router-level `authenticate` middleware (app.js).
+    const patientId = req.user.id;
 
     const patient = await Patient.findById(patientId).select('-password');
     if (!patient) {
@@ -258,56 +229,20 @@ router.get('/profile', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('=== Error in GET /profile ===');
-    console.error('Error message:', error.message);
-    console.error('Error name:', error.name);
-    console.error('Error stack:', error.stack);
+    console.error('Error in GET /profile:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error fetching patient profile',
-      error: error.message,
-      errorName: error.name
+      error: error.message
     });
   }
 });
 
 // Update authenticated patient's profile (using token)
-router.put('/profile', async (req, res) => {
+router.put('/profile', audit('patient.self.update', 'Patient'), async (req, res) => {
   try {
-    // Get token from Authorization header
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided',
-        tokenExpired: false
-      });
-    }
-
-    // Verify token and get patient ID
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError) {
-      if (jwtError.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Token has expired. Please login again.',
-          tokenExpired: true
-        });
-      }
-      if (jwtError.name === 'JsonWebTokenError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid token. Please login again.',
-          tokenExpired: false
-        });
-      }
-      throw jwtError;
-    }
-
-    const patientId = decoded.id;
+    // req.user is set by the router-level `authenticate` middleware (app.js).
+    const patientId = req.user.id;
 
     const updates = req.body;
 
@@ -390,37 +325,11 @@ router.put('/profile', async (req, res) => {
 });
 
 // Change password endpoint
-router.put('/changePassword', async (req, res) => {
+router.put('/changePassword', audit('patient.self.password.change', 'Patient'), async (req, res) => {
   try {
-    // Get token from Authorization header
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided'
-      });
-    }
-
-    // Verify token and get patient ID
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError) {
-      if (jwtError.name === 'TokenExpiredError') {
-        return res.status(401).json({
-          success: false,
-          message: 'Token has expired. Please login again.',
-          tokenExpired: true
-        });
-      }
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token'
-      });
-    }
-
-    const patientId = decoded.id;
+    // req.user is set by the router-level `authenticate` middleware (app.js).
+    // The password can only ever be changed for the authenticated caller.
+    const patientId = req.user.id;
     const { currentPassword, newPassword } = req.body;
 
     // Validate input
@@ -431,10 +340,10 @@ router.put('/changePassword', async (req, res) => {
       });
     }
 
-    if (newPassword.length < 6) {
+    if (typeof newPassword !== 'string' || newPassword.length < 8 || !/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
       return res.status(400).json({
         success: false,
-        message: 'New password must be at least 6 characters long'
+        message: 'New password must be at least 8 characters and include a letter and a number'
       });
     }
 
@@ -476,7 +385,7 @@ router.put('/changePassword', async (req, res) => {
 });
 
 // Get patient details with reports and prescriptions
-router.get('/:patientId', async (req, res) => {
+router.get('/:patientId', ownPatient, audit('patient.record.read', 'Patient'), async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -543,7 +452,7 @@ router.get('/:patientId', async (req, res) => {
 });
 
 // Get patient appointments
-router.get('/:patientId/appointments', async (req, res) => {
+router.get('/:patientId/appointments', ownPatient, audit('patient.appointments.read', 'Patient'), async (req, res) => {
   try {
     const { patientId } = req.params;
     const { status } = req.query; // Optional filter by status
@@ -575,7 +484,7 @@ router.get('/:patientId/appointments', async (req, res) => {
 });
 
 // Get patient profile for dashboard
-router.get('/:patientId/profile', async (req, res) => {
+router.get('/:patientId/profile', ownPatient, audit('patient.record.read', 'Patient'), async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -625,7 +534,7 @@ router.get('/:patientId/profile', async (req, res) => {
 });
 
 // Update patient profile
-router.put('/:patientId/profile', async (req, res) => {
+router.put('/:patientId/profile', ownPatient, audit('patient.record.update', 'Patient'), async (req, res) => {
   try {
     const { patientId } = req.params;
     const updates = req.body;

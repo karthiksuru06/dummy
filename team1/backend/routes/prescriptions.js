@@ -8,6 +8,7 @@ const Patient = require('../models/Patient');
 const Task = require('../models/Task');
 const { requireRole } = require('../middleware/auth');
 const { validateObjectIdParam } = require('../middleware/validate');
+const { audit } = require('../middleware/audit');
 const { sendEmail } = require('../utils/email');
 
 // ---- Ownership guards (router is authenticated in server.js) ----
@@ -44,7 +45,7 @@ async function apptParamParticipantOrAdmin(req, res, next) {
 }
 
 // Create a new prescription
-router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
+router.post('/', requireRole('doctor', 'admin'), audit('prescription.create', 'Prescription'), async (req, res) => {
   try {
     let {
       appointment_id,
@@ -210,7 +211,7 @@ router.post('/', requireRole('doctor', 'admin'), async (req, res) => {
 });
 
 // Get prescription by ID
-router.get('/:id', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, async (req, res) => {
+router.get('/:id', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, audit('prescription.read', 'Prescription'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -240,7 +241,7 @@ router.get('/:id', validateObjectIdParam('id'), loadPrescription, rxParticipantO
 });
 
 // Get prescriptions for a patient
-router.get('/patient/:patientId', validateObjectIdParam('patientId'), patientParamSelfOrStaff, async (req, res) => {
+router.get('/patient/:patientId', validateObjectIdParam('patientId'), patientParamSelfOrStaff, audit('prescription.read', 'Prescription'), async (req, res) => {
   try {
     const { patientId } = req.params;
 
@@ -263,7 +264,7 @@ router.get('/patient/:patientId', validateObjectIdParam('patientId'), patientPar
 });
 
 // Get prescriptions for an appointment
-router.get('/appointment/:appointmentId', validateObjectIdParam('appointmentId'), apptParamParticipantOrAdmin, async (req, res) => {
+router.get('/appointment/:appointmentId', validateObjectIdParam('appointmentId'), apptParamParticipantOrAdmin, audit('prescription.read', 'Prescription'), async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
@@ -293,7 +294,7 @@ router.get('/appointment/:appointmentId', validateObjectIdParam('appointmentId')
 });
 
 // Download prescription as a PDF document
-router.get('/:id/download', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, async (req, res) => {
+router.get('/:id/download', validateObjectIdParam('id'), loadPrescription, rxParticipantOrAdmin, audit('prescription.read', 'Prescription'), async (req, res) => {
   try {
     const { id } = req.params;
 

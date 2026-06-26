@@ -1,14 +1,15 @@
 /* MEDviz Admin - Premium Console Theme (Aligned with Patient/Doctor) */
 :root {
-  /* 🎨 Primary Palette - Deep Professional Blues & Emerald Accents */
-  --admin-primary: #2C5F9F;          /* Medium Blue */
-  --admin-primary-dark: #1E4270;      /* Darker Blue */
-  --admin-primary-light: #E0E9F8;     /* Very Light Blue */
-  
-  --admin-secondary: #0B264C;        /* Deep Slate/Teal */
-  --admin-accent: #10b981;          /* Emerald Green (Success) */
-  --admin-warning: #f59e0b;         /* Amber */
-  --admin-danger: #ef4444;          /* Rose Red */
+  /* 🎨 Primary Palette - derived from the shared brand tokens (tokens.css)
+     so the admin console shares ONE palette with patient/doctor. */
+  --admin-primary: var(--color-primary);        /* #2C5F9F Medium Blue */
+  --admin-primary-dark: var(--c-blue-700);      /* #1E4270 Darker Blue */
+  --admin-primary-light: var(--color-primary-tint); /* #E0E9F8 Very Light Blue */
+
+  --admin-secondary: var(--c-navy-900);         /* #0B264C Deep Slate/Teal */
+  --admin-accent: var(--color-accent);          /* vitality green (Success) */
+  --admin-warning: var(--c-warning);            /* Amber */
+  --admin-danger: var(--c-danger);              /* Rose Red */
   
   /* ☁️ Surface & Backgrounds (Peaceful & High Density) */
   --admin-bg-canvas: #f8fafc;       /* Ultra Light Slate */

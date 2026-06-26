@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiEye, FiTrash2, FiFilter, FiX, FiPrinter } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 import API from '../../../api/axiosConfig';
 import './AdminMedicalRecords.css';
 
@@ -47,7 +48,7 @@ const AdminMedicalRecords = () => {
     } catch (error) {
       console.error('Error fetching prescription details:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to load prescription details. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage);
       setViewModalOpen(false);
     } finally {
       setLoadingPrescription(false);
@@ -71,11 +72,11 @@ const AdminMedicalRecords = () => {
         setRecords(prev =>
   prev.filter(r => r.id !== recordId)
 );
-        alert('Prescription deleted successfully!');
+        toast.success('Prescription deleted successfully!');
       }
     } catch (error) {
       console.error('Error deleting prescription:', error);
-      alert('Failed to delete prescription. Please try again.');
+      toast.error('Failed to delete prescription. Please try again.');
     }
   };
 

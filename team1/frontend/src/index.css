@@ -2,14 +2,15 @@
 @import './styles/tokens.css';
 
 :root {
-  --bg-dark: #fbfbfb;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f8fafc;
-  --text-primary: #0f172a;
+  /* Legacy aliases kept for selectors still referencing them; values now
+     derive from the canonical tokens in styles/tokens.css. The dead
+     --accent-2 / --accent-3 vars were removed (unused). */
+  --bg-dark: var(--c-canvas);
+  --bg-surface: var(--c-surface);
+  --bg-surface-elevated: var(--c-surface-2);
+  --text-primary: var(--c-ink);
   --text-secondary: #64748b;
-  --accent-1: #2C5F9F;
-  --accent-2: #2C5F9F;
-  --accent-3: #0FB5A6;
+  --accent-1: var(--color-primary);
   --border-subtle: rgba(15, 23, 42, 0.08);
   --border-glow: rgba(15, 23, 42, 0.15);
   --shadow-glow: 0 0 40px -10px rgba(59, 130, 246, 0.2);

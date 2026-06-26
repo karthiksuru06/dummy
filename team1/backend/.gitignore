@@ -14,3 +14,6 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local uploads (replaced by cloud storage for Render deployment)
+uploads/

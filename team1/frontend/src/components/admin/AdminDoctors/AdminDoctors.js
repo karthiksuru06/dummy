@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiCheck, FiX, FiPower, FiFileText, FiMail } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 import API from '../../../api/axiosConfig';
 import './AdminDoctors.css';
 import '../AdminTheme.css';
@@ -55,11 +56,11 @@ const AdminDoctors = () => {
       if (response.data.success) {
         // Update local state
         setDoctors(doctors.map(d => d.id === doctor.id ? { ...d, status: 'approved' } : d));
-        alert('Doctor approved successfully!');
+        toast.success('Doctor approved successfully!');
       }
     } catch (error) {
       console.error('Error approving doctor:', error);
-      alert('Failed to approve doctor. Please try again.');
+      toast.error('Failed to approve doctor. Please try again.');
     }
   };
 
@@ -70,11 +71,11 @@ const AdminDoctors = () => {
       if (response.data.success) {
         // Update local state
         setDoctors(doctors.map(d => d.id === doctor.id ? { ...d, status: 'rejected' } : d));
-        alert('Doctor rejected successfully!');
+        toast.success('Doctor rejected successfully!');
       }
     } catch (error) {
       console.error('Error rejecting doctor:', error);
-      alert('Failed to reject doctor. Please try again.');
+      toast.error('Failed to reject doctor. Please try again.');
     }
   };
 
@@ -89,11 +90,11 @@ const AdminDoctors = () => {
       if (response.data.success) {
         // Update local state
         setDoctors(doctors.map(d => d.id === doctor.id ? { ...d, status: 'deactivated' } : d));
-        alert('Doctor deactivated successfully! Email notification sent.');
+        toast.success('Doctor deactivated successfully! Email notification sent.');
       }
     } catch (error) {
       console.error('Error deactivating doctor:', error);
-      alert('Failed to deactivate doctor. Please try again.');
+      toast.error('Failed to deactivate doctor. Please try again.');
     }
   };
 

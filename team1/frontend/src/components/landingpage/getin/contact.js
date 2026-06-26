@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -19,10 +20,10 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (errors.name || errors.email) {
-      alert('Please fix the validation errors before submitting.');
+      toast.error('Please fix the validation errors before submitting.');
       return;
     }
-    alert('Message sent successfully!');
+    toast.success('Message sent successfully!');
     setFormData({ name: '', email: '', message: '' });
     setErrors({ name: '', email: '' });
   };
